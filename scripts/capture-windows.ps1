@@ -3,6 +3,30 @@ param(
   [string]$OutputPath
 )
 
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class WoxScreenshotNative {
+  [DllImport("user32.dll")]
+  public static extern bool SetProcessDPIAware();
+
+  [DllImport("user32.dll")]
+  public static extern bool SetProcessDpiAwarenessContext(IntPtr dpiContext);
+}
+"@
+
+try {
+  # Per-monitor DPI awareness keeps WinForms coordinates aligned with physical
+  # screen pixels on scaled displays such as 150%.
+  [WoxScreenshotNative]::SetProcessDpiAwarenessContext([IntPtr](-4)) | Out-Null
+} catch {
+  try {
+    [WoxScreenshotNative]::SetProcessDPIAware() | Out-Null
+  } catch {
+  }
+}
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
@@ -28,6 +52,7 @@ $form.ShowInTaskbar = $false
 $form.KeyPreview = $true
 $form.Cursor = [System.Windows.Forms.Cursors]::Cross
 $form.DoubleBuffered = $true
+$form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::None
 $form.BackColor = [System.Drawing.Color]::Black
 $form.Opacity = 1
 
@@ -36,6 +61,7 @@ $state = @{
   Start = [System.Drawing.Point]::Empty
   Current = [System.Drawing.Point]::Empty
   Selection = [System.Drawing.Rectangle]::Empty
+  PreviousSelection = [System.Drawing.Rectangle]::Empty
   Cancelled = $false
   Completed = $false
 }
@@ -46,6 +72,29 @@ function Get-SelectionRectangle([System.Drawing.Point]$a, [System.Drawing.Point]
   $w = [Math]::Abs($a.X - $b.X)
   $h = [Math]::Abs($a.Y - $b.Y)
   return New-Object System.Drawing.Rectangle $x, $y, $w, $h
+}
+
+function Get-RepaintRectangle([System.Drawing.Rectangle]$a, [System.Drawing.Rectangle]$b) {
+  if ($a.IsEmpty) {
+    $union = $b
+  } elseif ($b.IsEmpty) {
+    $union = $a
+  } else {
+    $union = [System.Drawing.Rectangle]::Union($a, $b)
+  }
+
+  $top = [Math]::Max(0, $union.Top - 34)
+  $left = [Math]::Max(0, $union.Left - 4)
+  $right = [Math]::Min($form.Width, $union.Right + 4)
+  $bottom = [Math]::Min($form.Height, $union.Bottom + 4)
+  return New-Object System.Drawing.Rectangle $left, $top, ([Math]::Max(1, $right - $left)), ([Math]::Max(1, $bottom - $top))
+}
+
+function Set-Selection([System.Drawing.Rectangle]$nextSelection) {
+  $previous = $state.Selection
+  $state.PreviousSelection = $previous
+  $state.Selection = $nextSelection
+  $form.Invalidate((Get-RepaintRectangle $previous $nextSelection))
 }
 
 function Complete-Capture {
@@ -109,8 +158,7 @@ $form.Add_MouseDown({
     $state.Dragging = $true
     $state.Start = $event.Location
     $state.Current = $event.Location
-    $state.Selection = Get-SelectionRectangle $state.Start $state.Current
-    $form.Invalidate()
+    Set-Selection (Get-SelectionRectangle $state.Start $state.Current)
   })
 
 $form.Add_MouseMove({
@@ -119,8 +167,7 @@ $form.Add_MouseMove({
       return
     }
     $state.Current = $event.Location
-    $state.Selection = Get-SelectionRectangle $state.Start $state.Current
-    $form.Invalidate()
+    Set-Selection (Get-SelectionRectangle $state.Start $state.Current)
   })
 
 $form.Add_MouseUp({
@@ -130,8 +177,7 @@ $form.Add_MouseUp({
     }
     $state.Dragging = $false
     $state.Current = $event.Location
-    $state.Selection = Get-SelectionRectangle $state.Start $state.Current
-    $form.Invalidate()
+    Set-Selection (Get-SelectionRectangle $state.Start $state.Current)
   })
 
 $form.Add_MouseDoubleClick({
@@ -165,4 +211,3 @@ if ($state.Cancelled) {
 
 @{ status = "cancelled" } | ConvertTo-Json -Compress
 exit 2
-
