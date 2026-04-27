@@ -42,12 +42,8 @@
       "table_name": "Name",
       "table_provider": "Provider",
       "table_api_key": "API key",
-      "table_secret_key": "Secret key",
-      "table_app_id": "App ID",
       "table_base_url": "Base URL",
-      "table_command": "Local bridge command",
       "table_model": "Model",
-      "table_region": "Region",
       "provider_windows_app_sdk": "Windows App SDK local OCR",
       "provider_snipping_tool": "Snipping Tool OCR (Windows 10/11)",
       "provider_wechat_qq": "WeChat/QQ OCR (requires WeChat or QQ)",
@@ -153,12 +149,8 @@
       "table_name": "名称",
       "table_provider": "服务",
       "table_api_key": "API Key",
-      "table_secret_key": "Secret Key",
-      "table_app_id": "App ID",
       "table_base_url": "Base URL",
-      "table_command": "本地桥接命令",
       "table_model": "模型",
-      "table_region": "Region",
       "provider_windows_app_sdk": "Windows App SDK 本地 OCR",
       "provider_snipping_tool": "Snipping Tool OCR（需要 Windows 10/11）",
       "provider_wechat_qq": "微信/QQ OCR（需要安装微信或 QQ）",
@@ -414,29 +406,8 @@
             "HideInTable": true
           },
           {
-            "Key": "secretKey",
-            "Label": "i18n:table_secret_key",
-            "Type": "text",
-            "Width": 320,
-            "HideInTable": true
-          },
-          {
-            "Key": "appId",
-            "Label": "i18n:table_app_id",
-            "Type": "text",
-            "Width": 220,
-            "HideInTable": true
-          },
-          {
             "Key": "baseUrl",
             "Label": "i18n:table_base_url",
-            "Type": "text",
-            "Width": 360,
-            "HideInTable": true
-          },
-          {
-            "Key": "command",
-            "Label": "i18n:table_command",
             "Type": "text",
             "Width": 360,
             "HideInTable": true
@@ -446,13 +417,6 @@
             "Label": "i18n:table_model",
             "Type": "text",
             "Width": 240,
-            "HideInTable": true
-          },
-          {
-            "Key": "region",
-            "Label": "i18n:table_region",
-            "Type": "text",
-            "Width": 180,
             "HideInTable": true
           }
         ],
