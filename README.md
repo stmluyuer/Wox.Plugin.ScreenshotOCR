@@ -1,5 +1,136 @@
 # Screenshot OCR
 
+Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截图 OCR 插件。支持截图、剪贴板图片和图片文件的文字识别，设计上与 LuxTranslate 通过 `tr` 查询前缀协同工作，典型流程为：
+
+```text
+截图 -> OCR 识别文字 -> LuxTranslate -> 目标语言
+```
+
+## 功能
+
+- `ocr capture` 在 Windows 上打开类似 Snipaste 的区域截图窗口。
+- `ocr clipboard` 读取剪贴板中的图片并执行 OCR。
+- `ocr file <path>` 识别本地已有图片文件。
+- `ocr translate` 截图、识别并发送结果到 LuxTranslate。
+- 在线 OCR 服务抽象层，兼容传统 OCR API 和支持视觉的大语言模型。
+- 离线 OCR：支持 Windows 本地 OCR、Snipping Tool OCR 和微信/QQ OCR。
+- 本地部署脚本，方便快速部署到 `C:\Users\权辉\.wox\wox-user\plugins` 测试。
+
+## OCR 服务
+
+Screenshot OCR 支持以下 OCR 服务：
+
+| 类别         | 服务                                                            |
+| ------------ | --------------------------------------------------------------- |
+| 传统 OCR     | 百度、有道、火山、Bing/Azure Vision、Google Cloud Vision        |
+| 大语言模型   | OpenAI 兼容视觉模型                                             |
+| 离线 OCR     | Windows App SDK 本地 OCR、Snipping Tool OCR、微信/QQ OCR        |
+
+说明：
+
+- 百度使用通用基础 OCR 接口，需要 API Key 和 Secret Key。
+- 有道使用开放 OCR API，需要 App Key 和 Secret Key。
+- 火山使用带签名的 Volcengine 视觉 OCR 请求。
+- Bing/Azure Vision 需要 Computer Vision endpoint 和 subscription key。
+- Google Cloud Vision 使用基于 API Key 的 `images:annotate`。
+- LLM 提供者使用 OpenAI-compatible `chat/completions` 接口传入图片。
+- Windows App SDK 本地 OCR 通过 Windows Runtime OCR 离线运行，需要 Windows 10 或 Windows 11。
+- Snipping Tool OCR 面向 Windows 10/11 声明。如果配置了兼容的本地桥接命令则使用该命令，否则回退到内置的 Windows 本地 OCR 助手。
+- 微信/QQ OCR 需要安装微信或 QQ 提供原生识别路径。如果配置了兼容的本地桥接命令则使用该命令，否则回退到内置的 Windows 本地 OCR 助手。
+
+## 安装
+
+安装依赖并构建：
+
+```bash
+pnpm install
+pnpm build
+```
+
+将构建好的插件部署到本地 Wox 插件目录：
+
+```bash
+pnpm run deploy
+```
+
+部署目标路径为：
+
+```text
+C:\Users\权辉\.wox\wox-user\plugins\76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f@0.1.0
+```
+
+部署后重新加载 Wox 插件即可。
+
+## 使用
+
+| 命令                        | 说明                            |
+| --------------------------- | ------------------------------- |
+| `ocr`                       | 显示帮助                        |
+| `ocr capture`               | 截取屏幕区域并 OCR              |
+| `ocr clipboard`             | 识别剪贴板中的图片              |
+| `ocr file <path>`           | 识别已有的图片文件              |
+| `ocr translate`             | 截取区域、OCR 并打开 LuxTranslate |
+| `ocr clipboard translate`   | 识别剪贴板图片并打开 LuxTranslate |
+| `ocr file <path> translate` | 识别图片文件并打开 LuxTranslate   |
+
+推荐 Wox 查询快捷键配置：
+
+- 查询内容：`ocr translate`
+- 静默执行：开启
+
+## 配置
+
+- `默认 OCR 服务`：普通 OCR 命令使用的服务。
+- `OCR 后自动翻译`：即使使用非翻译命令，也将 OCR 结果发送到翻译。
+- `翻译查询前缀`：默认为 `tr`。
+- `请求超时`：在线 OCR 调用和本地 OCR 桥接命令的超时时间。
+- `OCR 服务配置`：在服务表格中配置凭证、Base URL、模型、Region 和本地桥接命令。
+
+## 开发
+
+```bash
+pnpm install
+pnpm test
+pnpm build
+pnpm run deploy
+```
+
+常用脚本：
+
+- `pnpm test`：运行 Jest 测试。
+- `pnpm build`：运行 lint、format、打包插件资源到 `dist/`。
+- `pnpm run deploy`：将 `dist/` 复制到 Wox 用户插件目录。
+- `pnpm run lint`：运行 ESLint。
+
+## 工作流
+
+1. 构建并部署插件。
+2. 运行 `ocr capture`，验证 Windows 区域选择覆盖层。
+3. 复制图片到剪贴板，运行 `ocr clipboard`。
+4. 配置在线 OCR 服务。
+5. 运行 `ocr translate` 或 `ocr clipboard translate` 将 OCR 文字交给 LuxTranslate。
+
+## 截图
+
+截图暂未补充。建议后续加入：
+
+- Windows 截图覆盖层（背景变暗 + 高亮选中区域）。
+- Wox 中的 OCR 识别结果。
+- OCR 服务配置表格。
+- 翻译联动结果。
+
+## AI 协作声明
+
+本项目由作者在 OpenAI Codex 协助下大量生成、重构和测试。作者负责需求设计、代码审阅、功能验证和发布决策。
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
+
+---
+
+# Screenshot OCR
+
 Screenshot OCR is a [Wox](https://github.com/Wox-launcher/Wox) plugin for recognizing text from screenshots, clipboard images, or image files. It is designed to work with LuxTranslate through the `tr` query prefix, so the common flow is:
 
 ```text
@@ -18,7 +149,7 @@ screenshot -> OCR text -> LuxTranslate -> target language
 
 ## Providers
 
-Screenshot OCR supports these provider slots:
+Screenshot OCR supports these providers:
 
 | Category              | Providers                                                      |
 | --------------------- | -------------------------------------------------------------- |
