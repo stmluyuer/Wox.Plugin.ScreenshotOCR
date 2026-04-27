@@ -11,7 +11,7 @@ import {
 } from "@wox-launcher/wox-plugin";
 import { existsSync } from "node:fs";
 import { buildTranslateQuery, parseCommand } from "./commands";
-import { createOcrProvider, providerDisplayName } from "./ocr";
+import { createOcrProvider, providerDisplayName, providerI18nKey } from "./ocr";
 import {
   createClipboardImageProvider,
   createScreenshotProvider,
@@ -21,6 +21,7 @@ import { findProviderRow, loadSettings } from "./settings";
 import {
   CapturedImage,
   ClipboardImageProvider,
+  I18nError,
   OcrProviderName,
   PluginSettings,
   ScreenshotProvider,
@@ -45,34 +46,60 @@ async function t(ctx: Context, key: string): Promise<string> {
   }
 }
 
+async function resolveI18nMessage(
+  ctx: Context,
+  key: string,
+  params: Record<string, string>,
+  fallback: string,
+): Promise<string> {
+  let msg = await t(ctx, key);
+  if (msg === key) return fallback;
+  for (const [k, v] of Object.entries(params)) {
+    msg = msg.replace(`{${k}}`, v);
+  }
+  return msg;
+}
+
 async function buildHelpResult(ctx: Context): Promise<Result> {
+  const cmd = await t(ctx, "help_preview_command");
+  const desc = await t(ctx, "help_preview_description");
+  const title = await t(ctx, "help_title");
   return {
-    Title: await t(ctx, "help_title"),
+    Title: title,
     SubTitle: await t(ctx, "help_subtitle"),
     Icon: PLUGIN_ICON,
     Score: 100,
     Preview: {
       PreviewType: "markdown",
       PreviewData: [
-        "# Screenshot OCR",
+        `# ${title}`,
         "",
-        "| Command | Description |",
+        `| ${cmd} | ${desc} |`,
         "| --- | --- |",
-        "| `ocr capture` | Capture a region and recognize text |",
-        "| `ocr clipboard` | Recognize the image currently in the clipboard |",
-        "| `ocr file <path>` | Recognize an existing image file |",
-        "| `ocr translate` | Capture, recognize, and send text to Translate |",
-        "| `ocr clipboard translate` | Recognize clipboard image and send text to Translate |",
+        `| \`ocr capture\` | ${await t(ctx, "help_preview_capture")} |`,
+        `| \`ocr clipboard\` | ${await t(ctx, "help_preview_clipboard")} |`,
+        `| \`ocr file <path>\` | ${await t(ctx, "help_preview_file")} |`,
+        `| \`ocr translate\` | ${await t(ctx, "help_preview_translate")} |`,
+        `| \`ocr clipboard translate\` | ${await t(ctx, "help_preview_clipboard_translate")} |`,
       ].join("\n"),
       PreviewProperties: {},
     },
   };
 }
 
-function buildUnknownResult(message: string): Result {
+async function buildUnknownResult(
+  ctx: Context,
+  i18nKey: string,
+  i18nParams: Record<string, string>,
+  fallbackMessage: string,
+): Promise<Result> {
+  let message = await t(ctx, i18nKey);
+  for (const [k, v] of Object.entries(i18nParams)) {
+    message = message.replace(`{${k}}`, v);
+  }
   return {
-    Title: message,
-    SubTitle: "Type ocr for help.",
+    Title: message || fallbackMessage,
+    SubTitle: await t(ctx, "unknown_help_subtitle"),
     Icon: PLUGIN_ICON,
     Score: 100,
   };
@@ -131,7 +158,11 @@ async function resolveImage(
 ): Promise<CapturedImage | null> {
   if (source === "file") {
     if (!filePath || !existsSync(filePath)) {
-      throw new Error(`Image file does not exist: ${filePath || ""}`);
+      throw new I18nError(
+        "error_image_file_missing",
+        { path: filePath || "" },
+        `Image file does not exist: ${filePath || ""}`,
+      );
     }
     return { path: filePath, source: "file" };
   }
@@ -162,7 +193,12 @@ async function recognizeImage(
   settings: PluginSettings,
   provider: OcrProviderName,
   image: CapturedImage,
-): Promise<{ text: string; providerName: string }> {
+): Promise<{
+  text: string;
+  providerName: string;
+  providerI18nKey: string;
+  providerI18nParams: Record<string, string>;
+}> {
   const providerRow = findProviderRow(settings, provider);
   const ocrProvider = createOcrProvider(provider);
   const result = await ocrProvider.recognize({
@@ -171,10 +207,22 @@ async function recognizeImage(
     providerRow,
     pluginDirectory,
   });
+  const pName =
+    result.providerName || providerDisplayName(provider, providerRow);
+  let pKey = providerI18nKey(provider);
+  const pParams: Record<string, string> = {};
+  if (provider === "llm") {
+    const match = pName.match(/\((.+)\)$/);
+    if (match) {
+      pKey = "provider_llm_with_model";
+      pParams.model = match[1];
+    }
+  }
   return {
     text: result.text.trim(),
-    providerName:
-      result.providerName || providerDisplayName(provider, providerRow),
+    providerName: pName,
+    providerI18nKey: pKey,
+    providerI18nParams: pParams,
   };
 }
 
@@ -218,12 +266,18 @@ async function runWorkflow(
       image.path,
     );
     const ocr = await recognizeImage(settings, provider, image);
+    const displayName = await resolveI18nMessage(
+      ctx,
+      ocr.providerI18nKey,
+      ocr.providerI18nParams,
+      ocr.providerName,
+    );
     if (ocr.text === "") {
       await updateStatus(
         ctx,
         actionContext.ResultId,
         await t(ctx, "result_empty"),
-        ocr.providerName,
+        displayName,
       );
       await api.ShowApp(ctx);
       return;
@@ -242,7 +296,7 @@ async function runWorkflow(
     await api.UpdateResult(ctx, {
       Id: actionContext.ResultId,
       Title: ocr.text,
-      SubTitle: `${ocr.providerName} | ${image.path}`,
+      SubTitle: `${displayName} | ${image.path}`,
       Icon: PLUGIN_ICON,
       Preview: {
         PreviewType: "markdown",
@@ -252,7 +306,7 @@ async function runWorkflow(
           ocr.text,
           "",
           `## ${await t(ctx, "preview_provider")}`,
-          ocr.providerName,
+          displayName,
           "",
           `## ${await t(ctx, "preview_source_image")}`,
           image.path,
@@ -282,24 +336,46 @@ async function runWorkflow(
       ],
     } as UpdatableResult);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const rawMessage = error instanceof Error ? error.message : String(error);
     await api.Log(
       ctx,
       "Error",
       error instanceof Error ? error.stack || error.message : String(error),
     );
+
+    let title: string;
+    let subtitle: string | undefined;
+
+    if (error instanceof PlatformUnsupportedError) {
+      title = await resolveI18nMessage(
+        ctx,
+        error.i18nKey,
+        error.i18nParams,
+        rawMessage,
+      );
+      subtitle = undefined;
+    } else if (error instanceof I18nError) {
+      title = await t(ctx, "result_failed");
+      subtitle = await resolveI18nMessage(
+        ctx,
+        error.key,
+        error.params,
+        rawMessage,
+      );
+    } else {
+      title = await t(ctx, "result_failed");
+      subtitle = rawMessage;
+    }
+
     await api.ShowApp(ctx);
     await api.UpdateResult(ctx, {
       Id: actionContext.ResultId,
-      Title:
-        error instanceof PlatformUnsupportedError
-          ? message
-          : await t(ctx, "result_failed"),
-      SubTitle: error instanceof PlatformUnsupportedError ? undefined : message,
+      Title: title,
+      SubTitle: subtitle,
       Icon: PLUGIN_ICON,
       Preview: {
         PreviewType: "markdown",
-        PreviewData: `# ${await t(ctx, "result_failed")}\n\n${message}`,
+        PreviewData: `# ${title}\n\n${subtitle || rawMessage}`,
         PreviewProperties: {},
       },
     } as UpdatableResult);
@@ -327,7 +403,14 @@ export const plugin: Plugin = {
       return [await buildHelpResult(ctx)];
     }
     if (command.kind === "unknown") {
-      return [buildUnknownResult(command.message)];
+      return [
+        await buildUnknownResult(
+          ctx,
+          command.i18nKey,
+          command.i18nParams,
+          command.fallbackMessage,
+        ),
+      ];
     }
     return [
       await buildImageCommandResult(

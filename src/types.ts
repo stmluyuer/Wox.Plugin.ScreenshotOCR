@@ -1,3 +1,14 @@
+export class I18nError extends Error {
+  constructor(
+    public readonly key: string,
+    public readonly params: Record<string, string> = {},
+    fallbackMessage?: string,
+  ) {
+    super(fallbackMessage || key);
+    this.name = "I18nError";
+  }
+}
+
 export type ImageSource = "capture" | "clipboard" | "file";
 
 export interface CapturedImage {
@@ -47,6 +58,7 @@ export interface OcrRequest {
 export interface OcrResult {
   text: string;
   providerName: string;
+  providerKey?: string;
 }
 
 export interface OcrProvider {

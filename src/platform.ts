@@ -6,12 +6,27 @@ import { promisify } from "node:util";
 import {
   CapturedImage,
   ClipboardImageProvider,
+  I18nError,
   ScreenshotProvider,
 } from "./types";
 
 const execFileAsync = promisify(execFile);
 
-export class PlatformUnsupportedError extends Error {}
+export class PlatformUnsupportedError extends Error {
+  public readonly i18nKey: string;
+  public readonly i18nParams: Record<string, string>;
+
+  constructor(
+    key: string,
+    params: Record<string, string> = {},
+    fallbackMessage?: string,
+  ) {
+    super(fallbackMessage || key);
+    this.name = "PlatformUnsupportedError";
+    this.i18nKey = key;
+    this.i18nParams = params;
+  }
+}
 
 export interface ScriptPlatformOptions {
   pluginDirectory: string;
@@ -127,7 +142,11 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
       return null;
     }
     if (result.status !== "ok" || !result.path || !existsSync(result.path)) {
-      throw new Error(result.message || "Windows screenshot capture failed.");
+      throw new I18nError(
+        "error_windows_capture_failed",
+        { message: result.message || "Windows screenshot capture failed." },
+        result.message || "Windows screenshot capture failed.",
+      );
     }
     return { path: result.path, source: "capture" };
   }
@@ -156,7 +175,11 @@ export class WindowsClipboardImageProvider implements ClipboardImageProvider {
       return null;
     }
     if (result.status !== "ok" || !result.path || !existsSync(result.path)) {
-      throw new Error(result.message || "Failed to read image from clipboard.");
+      throw new I18nError(
+        "error_clipboard_read_failed",
+        { message: result.message || "Failed to read image from clipboard." },
+        result.message || "Failed to read image from clipboard.",
+      );
     }
     return { path: result.path, source: "clipboard" };
   }
@@ -165,6 +188,8 @@ export class WindowsClipboardImageProvider implements ClipboardImageProvider {
 export class UnsupportedScreenshotProvider implements ScreenshotProvider {
   async captureRegion(): Promise<CapturedImage | null> {
     throw new PlatformUnsupportedError(
+      "error_capture_platform_unsupported",
+      {},
       "Screenshot capture is implemented for Windows first. macOS/Linux adapters are reserved.",
     );
   }
@@ -175,6 +200,8 @@ export class UnsupportedClipboardImageProvider
 {
   async readImage(): Promise<CapturedImage | null> {
     throw new PlatformUnsupportedError(
+      "error_clipboard_platform_unsupported",
+      {},
       "Clipboard image reading is implemented for Windows first. macOS/Linux adapters are reserved.",
     );
   }

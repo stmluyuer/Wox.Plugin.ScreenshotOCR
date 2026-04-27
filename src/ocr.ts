@@ -5,6 +5,7 @@ import { release } from "node:os";
 import { basename, join } from "node:path";
 import { promisify } from "node:util";
 import {
+  I18nError,
   OcrProvider,
   OcrProviderName,
   OcrProviderSettingsRow,
@@ -14,9 +15,13 @@ import {
 
 const execFileAsync = promisify(execFile);
 
-function requireConfig(value: string | undefined, message: string): string {
+function requireConfig(
+  value: string | undefined,
+  key: string,
+  fallbackMessage: string,
+): string {
   if (!value || value.trim() === "") {
-    throw new Error(message);
+    throw new I18nError(key, {}, fallbackMessage);
   }
   return value.trim();
 }
@@ -35,7 +40,9 @@ async function parseJsonResponse(
 ): Promise<unknown> {
   const body = await response.text();
   if (!response.ok) {
-    throw new Error(
+    throw new I18nError(
+      "error_provider_request_failed",
+      { provider: providerName, status: String(response.status), body },
       `${providerName} request failed with ${response.status}: ${body}`,
     );
   }
@@ -43,7 +50,11 @@ async function parseJsonResponse(
     return JSON.parse(body) as unknown;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`${providerName} returned invalid JSON: ${message}`);
+    throw new I18nError(
+      "error_provider_invalid_json",
+      { provider: providerName, message },
+      `${providerName} returned invalid JSON: ${message}`,
+    );
   }
 }
 
@@ -68,17 +79,17 @@ function compactLines(lines: Array<string | undefined | null>): string {
     .join("\n");
 }
 
-function ensureWindows(message: string): void {
+function ensureWin(key: string, fallbackMessage: string): void {
   if (process.platform !== "win32") {
-    throw new Error(message);
+    throw new I18nError(key, {}, fallbackMessage);
   }
 }
 
-function ensureWindows10OrLater(message: string): void {
-  ensureWindows(message);
+function ensureWin10(key: string, fallbackMessage: string): void {
+  ensureWin(key, fallbackMessage);
   const major = Number.parseInt(release().split(".")[0] || "0", 10);
   if (!Number.isFinite(major) || major < 10) {
-    throw new Error(message);
+    throw new I18nError(key, {}, fallbackMessage);
   }
 }
 
@@ -111,7 +122,14 @@ function parseOcrStdout(stdout: string, providerName: string): string {
 
   if (parsed) {
     if (parsed.status && parsed.status !== "ok") {
-      throw new Error(parsed.message || `${providerName} failed.`);
+      throw new I18nError(
+        "error_provider_failed",
+        {
+          provider: providerName,
+          message: parsed.message || `${providerName} failed.`,
+        },
+        parsed.message || `${providerName} failed.`,
+      );
     }
     if (typeof parsed.text === "string") return parsed.text.trim();
     if (typeof parsed.result === "string") return parsed.result.trim();
@@ -161,7 +179,14 @@ async function runExecutable(
     if (maybe.stdout?.trim()) {
       return { stdout: maybe.stdout, stderr: maybe.stderr || "" };
     }
-    throw new Error(maybe.stderr?.trim() || maybe.message || String(error));
+    throw new I18nError(
+      "error_command_failed",
+      {
+        provider: command,
+        message: maybe.stderr?.trim() || maybe.message || String(error),
+      },
+      maybe.stderr?.trim() || maybe.message || String(error),
+    );
   }
 }
 
@@ -174,6 +199,7 @@ async function runBundledWindowsOcr(
   const exePath = join(
     requireConfig(
       pluginDirectory,
+      "error_plugin_directory_required",
       "Plugin directory is required for Windows local OCR.",
     ),
     "bin",
@@ -181,7 +207,11 @@ async function runBundledWindowsOcr(
     "WindowsOcr.exe",
   );
   if (!existsSync(exePath)) {
-    throw new Error(`Windows local OCR helper was not found: ${exePath}`);
+    throw new I18nError(
+      "error_windows_ocr_helper_missing",
+      { path: exePath },
+      `Windows local OCR helper was not found: ${exePath}`,
+    );
   }
   const result = await runExecutable(exePath, [imagePath], timeoutMs);
   return {
@@ -194,7 +224,8 @@ export class WindowsAppSdkOcrProvider implements OcrProvider {
   name: OcrProviderName = "windows_app_sdk";
 
   async recognize(request: OcrRequest): Promise<OcrResult> {
-    ensureWindows10OrLater(
+    ensureWin10(
+      "error_windows_app_sdk_requires_windows",
       "Windows App SDK local OCR requires Windows 10 or Windows 11.",
     );
     return runBundledWindowsOcr(
@@ -210,7 +241,8 @@ export class SnippingToolOcrProvider implements OcrProvider {
   name: OcrProviderName = "snipping_tool";
 
   async recognize(request: OcrRequest): Promise<OcrResult> {
-    ensureWindows10OrLater(
+    ensureWin10(
+      "error_snipping_tool_requires_windows",
       "Snipping Tool OCR requires Windows 10 or Windows 11.",
     );
     const command = request.providerRow?.command?.trim();
@@ -236,7 +268,8 @@ export class WechatQqOcrProvider implements OcrProvider {
   name: OcrProviderName = "wechat_qq";
 
   async recognize(request: OcrRequest): Promise<OcrResult> {
-    ensureWindows(
+    ensureWin(
+      "error_wechat_qq_requires_windows",
       "WeChat/QQ OCR requires Windows with WeChat or QQ installed.",
     );
     const command = request.providerRow?.command?.trim();
@@ -263,9 +296,14 @@ export class BaiduOcrProvider implements OcrProvider {
 
   async recognize(request: OcrRequest): Promise<OcrResult> {
     const row = request.providerRow;
-    const apiKey = requireConfig(row?.apiKey, "Baidu OCR API key is required.");
+    const apiKey = requireConfig(
+      row?.apiKey,
+      "error_baidu_api_key_required",
+      "Baidu OCR API key is required.",
+    );
     const secretKey = requireConfig(
       row?.secretKey,
+      "error_baidu_secret_key_required",
       "Baidu OCR secret key is required.",
     );
     const tokenUrl = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${encodeURIComponent(apiKey)}&client_secret=${encodeURIComponent(secretKey)}`;
@@ -280,6 +318,7 @@ export class BaiduOcrProvider implements OcrProvider {
     )) as { access_token?: string };
     const accessToken = requireConfig(
       tokenJson.access_token,
+      "error_baidu_access_token_missing",
       "Baidu OCR did not return an access token.",
     );
 
@@ -299,7 +338,11 @@ export class BaiduOcrProvider implements OcrProvider {
       error_msg?: string;
     };
     if (json.error_msg) {
-      throw new Error(`Baidu OCR failed: ${json.error_msg}`);
+      throw new I18nError(
+        "error_provider_failed",
+        { provider: "Baidu OCR", message: json.error_msg },
+        `Baidu OCR failed: ${json.error_msg}`,
+      );
     }
     return {
       text: compactLines(json.words_result?.map((item) => item.words) || []),
@@ -320,10 +363,12 @@ export class YoudaoOcrProvider implements OcrProvider {
     const row = request.providerRow;
     const appKey = requireConfig(
       row?.apiKey || row?.appId,
+      "error_youdao_app_key_required",
       "Youdao OCR app key is required.",
     );
     const secretKey = requireConfig(
       row?.secretKey,
+      "error_youdao_secret_key_required",
       "Youdao OCR secret key is required.",
     );
     const img = imageBase64(request.imagePath);
@@ -360,7 +405,11 @@ export class YoudaoOcrProvider implements OcrProvider {
       resRegions?: Array<{ lines?: Array<{ text?: string }> }>;
     };
     if (json.errorCode && json.errorCode !== "0") {
-      throw new Error(`Youdao OCR failed with errorCode ${json.errorCode}.`);
+      throw new I18nError(
+        "error_youdao_failed",
+        { code: json.errorCode },
+        `Youdao OCR failed with errorCode ${json.errorCode}.`,
+      );
     }
     const regions = json.Result?.regions || json.resRegions || [];
     return {
@@ -389,10 +438,12 @@ export class VolcanoOcrProvider implements OcrProvider {
     const row = request.providerRow;
     const accessKey = requireConfig(
       row?.apiKey,
+      "error_volcano_access_key_required",
       "Volcano OCR access key is required.",
     );
     const secretKey = requireConfig(
       row?.secretKey,
+      "error_volcano_secret_key_required",
       "Volcano OCR secret key is required.",
     );
     const region = row?.region?.trim() || "cn-north-1";
@@ -459,12 +510,21 @@ export class VolcanoOcrProvider implements OcrProvider {
       ResponseMetadata?: { Error?: { Message?: string } };
     };
     if (json.ResponseMetadata?.Error?.Message) {
-      throw new Error(
+      throw new I18nError(
+        "error_provider_failed",
+        {
+          provider: "Volcano OCR",
+          message: json.ResponseMetadata.Error.Message,
+        },
         `Volcano OCR failed: ${json.ResponseMetadata.Error.Message}`,
       );
     }
     if (json.code && json.code !== 10000) {
-      throw new Error(`Volcano OCR failed: ${json.message || json.code}`);
+      throw new I18nError(
+        "error_provider_failed",
+        { provider: "Volcano OCR", message: String(json.message || json.code) },
+        `Volcano OCR failed: ${json.message || json.code}`,
+      );
     }
     return {
       text:
@@ -486,10 +546,12 @@ export class BingOcrProvider implements OcrProvider {
     const row = request.providerRow;
     const apiKey = requireConfig(
       row?.apiKey,
+      "error_bing_api_key_required",
       "Bing/Azure Vision API key is required.",
     );
     const baseUrl = requireConfig(
       row?.baseUrl,
+      "error_bing_base_url_required",
       "Bing/Azure Vision endpoint base URL is required. Example: https://<resource>.cognitiveservices.azure.com",
     ).replace(/\/+$/, "");
     const response = await fetchWithTimeout(
@@ -530,6 +592,7 @@ export class GoogleVisionOcrProvider implements OcrProvider {
     const row = request.providerRow;
     const apiKey = requireConfig(
       row?.apiKey,
+      "error_google_api_key_required",
       "Google Cloud Vision API key is required.",
     );
     const baseUrl = (
@@ -559,7 +622,11 @@ export class GoogleVisionOcrProvider implements OcrProvider {
     };
     const first = json.responses?.[0];
     if (first?.error?.message) {
-      throw new Error(`Google Cloud Vision failed: ${first.error.message}`);
+      throw new I18nError(
+        "error_provider_failed",
+        { provider: "Google Cloud Vision", message: first.error.message },
+        `Google Cloud Vision failed: ${first.error.message}`,
+      );
     }
     return {
       text: first?.textAnnotations?.[0]?.description?.trim() || "",
@@ -575,14 +642,17 @@ export class LlmVisionOcrProvider implements OcrProvider {
     const row = request.providerRow;
     const apiKey = requireConfig(
       row?.apiKey,
+      "error_llm_api_key_required",
       "OpenAI-compatible vision API key is required.",
     );
     const baseUrl = requireConfig(
       row?.baseUrl || "https://api.openai.com/v1",
+      "error_llm_base_url_required",
       "OpenAI-compatible base URL is required.",
     ).replace(/\/+$/, "");
     const model = requireConfig(
       row?.model || "gpt-4o-mini",
+      "error_llm_model_required",
       "Vision model name is required.",
     );
     const response = await fetchWithTimeout(
@@ -634,7 +704,9 @@ export class OfflineOcrProvider implements OcrProvider {
   name: OcrProviderName = "offline";
 
   async recognize(): Promise<OcrResult> {
-    throw new Error(
+    throw new I18nError(
+      "error_offline_reserved",
+      {},
       "Offline OCR is not implemented yet. This slot is reserved for a future built-in OCR engine.",
     );
   }
@@ -651,6 +723,19 @@ export function createOcrProvider(provider: OcrProviderName): OcrProvider {
   if (provider === "google_vision") return new GoogleVisionOcrProvider();
   if (provider === "llm") return new LlmVisionOcrProvider();
   return new OfflineOcrProvider();
+}
+
+export function providerI18nKey(provider: OcrProviderName): string {
+  if (provider === "windows_app_sdk") return "provider_windows_app_sdk";
+  if (provider === "snipping_tool") return "provider_snipping_tool";
+  if (provider === "wechat_qq") return "provider_wechat_qq";
+  if (provider === "baidu") return "provider_baidu";
+  if (provider === "youdao") return "provider_youdao";
+  if (provider === "volcano") return "provider_volcano";
+  if (provider === "bing") return "provider_bing";
+  if (provider === "google_vision") return "provider_google_vision";
+  if (provider === "llm") return "provider_llm";
+  return "provider_offline";
 }
 
 export function providerDisplayName(

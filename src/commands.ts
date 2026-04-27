@@ -8,7 +8,12 @@ export type OcrCommand =
       translate: boolean;
       filePath?: string;
     }
-  | { kind: "unknown"; message: string };
+  | {
+      kind: "unknown";
+      i18nKey: string;
+      i18nParams: Record<string, string>;
+      fallbackMessage: string;
+    };
 
 function stripOuterQuotes(value: string): string {
   const trimmed = value.trim();
@@ -49,12 +54,22 @@ export function parseCommand(search: string): OcrCommand {
     }
     const filePath = stripOuterQuotes(rest);
     if (filePath === "") {
-      return { kind: "unknown", message: "Image file path is empty." };
+      return {
+        kind: "unknown",
+        i18nKey: "error_image_file_path_empty",
+        i18nParams: {},
+        fallbackMessage: "Image file path is empty.",
+      };
     }
     return { kind: "image", source: "file", translate, filePath };
   }
 
-  return { kind: "unknown", message: `Unknown OCR command: ${trimmed}` };
+  return {
+    kind: "unknown",
+    i18nKey: "error_unknown_command",
+    i18nParams: { command: trimmed },
+    fallbackMessage: `Unknown OCR command: ${trimmed}`,
+  };
 }
 
 export function buildTranslateQuery(prefix: string, text: string): string {
