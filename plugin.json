@@ -23,14 +23,22 @@
       "settings_option_clipboard": "ocr clipboard — Read clipboard and OCR",
       "settings_group_providers": "OCR providers",
       "settings_default_provider": "Default OCR provider",
+      "settings_group_free_ocr": "No-configuration OCR",
+      "settings_group_llm_ocr": "Large model OCR",
+      "settings_ocr_service_type": "OCR service type",
+      "settings_ocr_service_type_tip": "Use no-configuration local OCR, or route OCR requests through the configured vision model.",
+      "settings_option_free_ocr": "No-configuration OCR",
+      "settings_option_llm_ocr": "Large model OCR",
+      "settings_free_ocr_provider": "No-configuration OCR provider",
+      "settings_free_ocr_provider_tip": "These providers work without API keys. Snipping Tool and WeChat/QQ can optionally use a local bridge command, otherwise they fall back to the bundled Windows OCR helper.",
       "settings_timeout": "Request timeout",
       "settings_translate_prefix": "Translate query prefix",
       "settings_auto_translate": "Auto translate after OCR",
       "settings_auto_execute": "Auto execute exact commands",
       "settings_auto_execute_tip": "Run a recognized OCR command as soon as it is typed, without pressing Enter. You can also append --run to a command for one-time auto execution.",
       "settings_skip_confirm": "Skip confirm after selection",
-      "settings_provider_table": "OCR provider settings",
-      "settings_provider_table_tip": "Configure online OCR providers. Fields not needed by a provider can stay empty.",
+      "settings_provider_table": "Large model OCR settings",
+      "settings_provider_table_tip": "Configure OpenAI-compatible vision model OCR. Keep one row for the model you want to use.",
       "table_name": "Name",
       "table_provider": "Provider",
       "table_api_key": "API key",
@@ -126,14 +134,22 @@
       "settings_option_clipboard": "ocr clipboard — 读取剪贴板并 OCR",
       "settings_group_providers": "OCR 服务",
       "settings_default_provider": "默认 OCR 服务",
+      "settings_group_free_ocr": "免配置 OCR",
+      "settings_group_llm_ocr": "大模型 OCR",
+      "settings_ocr_service_type": "OCR 服务类型",
+      "settings_ocr_service_type_tip": "使用免 API Key 的本地 OCR，或把 OCR 请求交给已配置的视觉大模型。",
+      "settings_option_free_ocr": "免配置 OCR",
+      "settings_option_llm_ocr": "大模型 OCR",
+      "settings_free_ocr_provider": "免配置 OCR 服务",
+      "settings_free_ocr_provider_tip": "这些服务不需要 API Key。Snipping Tool 和微信/QQ 可选本地桥接命令；未配置时回退到内置 Windows OCR 辅助程序。",
       "settings_timeout": "请求超时",
       "settings_translate_prefix": "翻译查询前缀",
       "settings_auto_translate": "OCR 后自动翻译",
       "settings_auto_execute": "完整命令自动执行",
       "settings_auto_execute_tip": "输入可识别的 OCR 命令后立即执行，不需要按回车。也可以在命令末尾追加 --run 来单次自动执行。",
       "settings_skip_confirm": "框选后直接识别（跳过确认）",
-      "settings_provider_table": "OCR 服务配置",
-      "settings_provider_table_tip": "配置在线 OCR 服务。不需要的字段可以留空。",
+      "settings_provider_table": "大模型 OCR 配置",
+      "settings_provider_table_tip": "配置 OpenAI 兼容的视觉大模型 OCR。保留一行当前要使用的模型配置即可。",
       "table_name": "名称",
       "table_provider": "服务",
       "table_api_key": "API Key",
@@ -238,23 +254,13 @@
     {
       "Type": "select",
       "Value": {
-        "Key": "default_ocr_provider",
-        "Label": "i18n:settings_default_provider",
-        "DefaultValue": "windows_app_sdk",
+        "Key": "ocr_service_type",
+        "Label": "i18n:settings_ocr_service_type",
+        "Tooltip": "i18n:settings_ocr_service_type_tip",
+        "DefaultValue": "free",
         "Options": [
-          {
-            "Label": "i18n:provider_windows_app_sdk",
-            "Value": "windows_app_sdk"
-          },
-          { "Label": "i18n:provider_snipping_tool", "Value": "snipping_tool" },
-          { "Label": "i18n:provider_wechat_qq", "Value": "wechat_qq" },
-          { "Label": "i18n:provider_baidu", "Value": "baidu" },
-          { "Label": "i18n:provider_youdao", "Value": "youdao" },
-          { "Label": "i18n:provider_volcano", "Value": "volcano" },
-          { "Label": "i18n:provider_bing", "Value": "bing" },
-          { "Label": "i18n:provider_google_vision", "Value": "google_vision" },
-          { "Label": "i18n:provider_llm", "Value": "llm" },
-          { "Label": "i18n:provider_offline", "Value": "offline" }
+          { "Label": "i18n:settings_option_free_ocr", "Value": "free" },
+          { "Label": "i18n:settings_option_llm_ocr", "Value": "llm" }
         ],
         "Style": { "Width": 360 }
       }
@@ -347,7 +353,32 @@
     {
       "Type": "head",
       "Value": {
-        "Content": "i18n:settings_group_providers",
+        "Content": "i18n:settings_group_free_ocr",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "select",
+      "Value": {
+        "Key": "default_free_ocr_provider",
+        "Label": "i18n:settings_free_ocr_provider",
+        "Tooltip": "i18n:settings_free_ocr_provider_tip",
+        "DefaultValue": "windows_app_sdk",
+        "Options": [
+          {
+            "Label": "i18n:provider_windows_app_sdk",
+            "Value": "windows_app_sdk"
+          },
+          { "Label": "i18n:provider_snipping_tool", "Value": "snipping_tool" },
+          { "Label": "i18n:provider_wechat_qq", "Value": "wechat_qq" }
+        ],
+        "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "i18n:settings_group_llm_ocr",
         "Style": {}
       }
     },
@@ -357,7 +388,7 @@
         "Key": "ocr_provider_table",
         "Title": "i18n:settings_provider_table",
         "Tooltip": "i18n:settings_provider_table_tip",
-        "DefaultValue": "[{\"name\":\"Windows App SDK\",\"provider\":\"windows_app_sdk\"},{\"name\":\"Snipping Tool\",\"provider\":\"snipping_tool\",\"command\":\"\"},{\"name\":\"WeChat/QQ OCR\",\"provider\":\"wechat_qq\",\"command\":\"\"},{\"name\":\"Baidu\",\"provider\":\"baidu\",\"apiKey\":\"\",\"secretKey\":\"\"},{\"name\":\"Youdao\",\"provider\":\"youdao\",\"apiKey\":\"\",\"secretKey\":\"\",\"appId\":\"\"},{\"name\":\"Volcano\",\"provider\":\"volcano\",\"apiKey\":\"\",\"secretKey\":\"\",\"region\":\"cn-north-1\"},{\"name\":\"Bing/Azure Vision\",\"provider\":\"bing\",\"apiKey\":\"\",\"baseUrl\":\"\"},{\"name\":\"Google Cloud Vision\",\"provider\":\"google_vision\",\"apiKey\":\"\",\"baseUrl\":\"https://vision.googleapis.com/v1\"},{\"name\":\"Vision LLM\",\"provider\":\"llm\",\"apiKey\":\"\",\"baseUrl\":\"https://api.openai.com/v1\",\"model\":\"gpt-4o-mini\"}]",
+        "DefaultValue": "[{\"name\":\"Vision LLM\",\"provider\":\"llm\",\"apiKey\":\"\",\"baseUrl\":\"https://api.openai.com/v1\",\"model\":\"gpt-4o-mini\"}]",
         "SortColumnKey": "name",
         "SortOrder": "asc",
         "MaxHeight": 320,
@@ -373,26 +404,7 @@
             "Label": "i18n:table_provider",
             "Type": "select",
             "Width": 190,
-            "SelectOptions": [
-              {
-                "Label": "i18n:provider_windows_app_sdk",
-                "Value": "windows_app_sdk"
-              },
-              {
-                "Label": "i18n:provider_snipping_tool",
-                "Value": "snipping_tool"
-              },
-              { "Label": "i18n:provider_wechat_qq", "Value": "wechat_qq" },
-              { "Label": "i18n:provider_baidu", "Value": "baidu" },
-              { "Label": "i18n:provider_youdao", "Value": "youdao" },
-              { "Label": "i18n:provider_volcano", "Value": "volcano" },
-              { "Label": "i18n:provider_bing", "Value": "bing" },
-              {
-                "Label": "i18n:provider_google_vision",
-                "Value": "google_vision"
-              },
-              { "Label": "i18n:provider_llm", "Value": "llm" }
-            ]
+            "SelectOptions": [{ "Label": "i18n:provider_llm", "Value": "llm" }]
           },
           {
             "Key": "apiKey",

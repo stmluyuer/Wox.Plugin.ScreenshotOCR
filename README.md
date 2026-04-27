@@ -12,8 +12,8 @@ Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截
 - `ocr clipboard` 读取剪贴板中的图片并执行 OCR。
 - `ocr file <path>` 识别本地已有图片文件。
 - `ocr translate` 截图、识别并发送结果到 LuxTranslate。
-- 在线 OCR 服务抽象层，兼容传统 OCR API 和支持视觉的大语言模型。
-- 离线 OCR：支持 Windows 本地 OCR、Snipping Tool OCR 和微信/QQ OCR。
+- 免配置 OCR：支持 Windows 本地 OCR、Snipping Tool OCR 和微信/QQ OCR。
+- 大模型 OCR：支持 OpenAI 兼容视觉模型。
 - 本地部署脚本，方便快速部署到 `C:\Users\权辉\.wox\wox-user\plugins` 测试。
 
 ## OCR 服务
@@ -22,21 +22,16 @@ Screenshot OCR 支持以下 OCR 服务：
 
 | 类别       | 服务                                                     |
 | ---------- | -------------------------------------------------------- |
-| 传统 OCR   | 百度、有道、火山、Bing/Azure Vision、Google Cloud Vision |
-| 大语言模型 | OpenAI 兼容视觉模型                                      |
-| 离线 OCR   | Windows App SDK 本地 OCR、Snipping Tool OCR、微信/QQ OCR |
+| 免配置 OCR | Windows App SDK 本地 OCR、Snipping Tool OCR、微信/QQ OCR |
+| 大模型 OCR | OpenAI 兼容视觉模型                                      |
 
 说明：
 
-- 百度使用通用基础 OCR 接口，需要 API Key 和 Secret Key。
-- 有道使用开放 OCR API，需要 App Key 和 Secret Key。
-- 火山使用带签名的 Volcengine 视觉 OCR 请求。
-- Bing/Azure Vision 需要 Computer Vision endpoint 和 subscription key。
-- Google Cloud Vision 使用基于 API Key 的 `images:annotate`。
-- LLM 提供者使用 OpenAI-compatible `chat/completions` 接口传入图片。
+- 免配置 OCR 不需要 API Key。
 - Windows App SDK 本地 OCR 通过 Windows Runtime OCR 离线运行，需要 Windows 10 或 Windows 11。
 - Snipping Tool OCR 面向 Windows 10/11 声明。如果配置了兼容的本地桥接命令则使用该命令，否则回退到内置的 Windows 本地 OCR 助手。
 - 微信/QQ OCR 需要安装微信或 QQ 提供原生识别路径。如果配置了兼容的本地桥接命令则使用该命令，否则回退到内置的 Windows 本地 OCR 助手。
+- 大模型 OCR 使用 OpenAI-compatible `chat/completions` 接口传入图片。
 
 ## 安装
 
@@ -82,13 +77,14 @@ C:\Users\权辉\.wox\wox-user\plugins\76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f@0.1.0
 
 ## 配置
 
-- `默认 OCR 服务`：普通 OCR 命令使用的服务。
+- `OCR 服务类型`：选择免配置 OCR 或大模型 OCR。
+- `免配置 OCR 服务`：选择免配置模式下使用的本地服务。
 - `OCR 后自动翻译`：即使使用非翻译命令，也将 OCR 结果发送到翻译。
 - `完整命令自动执行`：输入完整 OCR 命令后立即执行，不需要按回车。
 - `框选后直接识别（跳过确认）`：截图框选完成后直接开始 OCR，不显示确认工具栏。
 - `翻译查询前缀`：默认为 `tr`。
-- `请求超时`：在线 OCR 调用和本地 OCR 桥接命令的超时时间。
-- `OCR 服务配置`：在服务表格中配置凭证、Base URL、模型、Region 和本地桥接命令。
+- `请求超时`：大模型 OCR 调用和本地 OCR 桥接命令的超时时间。
+- `大模型 OCR 配置`：在服务表格中配置 API Key、Base URL 和模型。
 
 ## 开发
 
@@ -111,7 +107,7 @@ pnpm run deploy
 1. 构建并部署插件。
 2. 运行 `ocr capture`，验证 Windows 区域选择覆盖层。
 3. 复制图片到剪贴板，运行 `ocr clipboard`。
-4. 配置在线 OCR 服务。
+4. 如需使用大模型 OCR，配置大模型服务。
 5. 运行 `ocr translate` 或 `ocr clipboard translate` 将 OCR 文字交给 LuxTranslate。
 
 ## 截图
@@ -147,31 +143,26 @@ screenshot -> OCR text -> LuxTranslate -> target language
 - `ocr clipboard` reads an image from the clipboard and runs OCR.
 - `ocr file <path>` recognizes an existing local image.
 - `ocr translate` captures, recognizes, and sends the result to LuxTranslate.
-- Online OCR provider abstraction for traditional OCR APIs and vision-capable large language models.
-- Offline OCR providers for Windows local OCR, Snipping Tool OCR, and WeChat/QQ OCR.
+- No-configuration OCR providers for Windows local OCR, Snipping Tool OCR, and WeChat/QQ OCR.
+- Large model OCR through an OpenAI-compatible vision model.
 - Local deploy script for quick testing in `C:\Users\权辉\.wox\wox-user\plugins`.
 
 ## Providers
 
 Screenshot OCR supports these providers:
 
-| Category              | Providers                                                      |
-| --------------------- | -------------------------------------------------------------- |
-| Traditional OCR       | Baidu, Youdao, Volcano, Bing/Azure Vision, Google Cloud Vision |
-| Large language models | OpenAI-compatible vision model                                 |
-| Offline OCR           | Windows App SDK local OCR, Snipping Tool OCR, WeChat/QQ OCR    |
+| Category             | Providers                                                   |
+| -------------------- | ----------------------------------------------------------- |
+| No-configuration OCR | Windows App SDK local OCR, Snipping Tool OCR, WeChat/QQ OCR |
+| Large model OCR      | OpenAI-compatible vision model                              |
 
 Notes:
 
-- Baidu uses the general basic OCR endpoint with API key and secret key.
-- Youdao uses the open OCR API with app key and secret key.
-- Volcano uses a signed Volcengine visual OCR request.
-- Bing/Azure Vision requires a Computer Vision endpoint and subscription key.
-- Google Cloud Vision uses API-key based `images:annotate`.
-- The LLM provider uses OpenAI-compatible `chat/completions` with image input.
+- No-configuration OCR providers do not require API keys.
 - Windows App SDK local OCR runs offline through Windows Runtime OCR and requires Windows 10 or Windows 11.
 - Snipping Tool OCR is declared for Windows 10/11. If a compatible native bridge command is configured, the plugin uses it; otherwise it falls back to the bundled Windows local OCR helper instead of failing.
 - WeChat/QQ OCR requires WeChat or QQ to be installed for the native path. If a compatible native bridge command is configured, the plugin uses it; otherwise it falls back to the bundled Windows local OCR helper instead of failing.
+- Large model OCR uses an OpenAI-compatible `chat/completions` endpoint with image input.
 
 ## Installation
 
@@ -217,13 +208,14 @@ Recommended Wox query hotkey:
 
 ## Configuration
 
-- `Default OCR provider`: provider used by normal OCR commands.
+- `OCR service type`: choose between no-configuration OCR and large model OCR.
+- `No-configuration OCR provider`: choose the local provider used when no-configuration OCR is selected.
 - `Auto translate after OCR`: sends OCR text to Translate even for non-translate commands.
 - `Auto execute exact commands`: runs complete OCR commands immediately without pressing Enter.
 - `Skip confirm after selection`: starts OCR after selecting a screenshot region without showing the confirmation toolbar.
 - `Translate query prefix`: defaults to `tr`.
-- `Request timeout`: timeout for online OCR calls and local OCR bridge commands.
-- `OCR provider settings`: configure credentials, base URLs, models, regions, and local bridge commands in the provider table.
+- `Request timeout`: timeout for large model OCR calls and local OCR bridge commands.
+- `Large model OCR settings`: configure API key, base URL, and model in the provider table.
 
 ## Development
 
@@ -246,7 +238,7 @@ Useful scripts:
 1. Build and deploy the plugin.
 2. Run `ocr capture` and verify the Windows selection overlay.
 3. Copy an image to the clipboard and run `ocr clipboard`.
-4. Configure an online OCR provider.
+4. Configure a large model OCR provider if needed.
 5. Run `ocr translate` or `ocr clipboard translate` to hand the OCR text to LuxTranslate.
 
 ## Screenshots

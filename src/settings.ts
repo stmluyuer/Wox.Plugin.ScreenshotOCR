@@ -29,8 +29,20 @@ const VALID_PROVIDERS: OcrProviderName[] = [
   "offline",
 ];
 
+const FREE_OCR_PROVIDERS: OcrProviderName[] = [
+  "windows_app_sdk",
+  "snipping_tool",
+  "wechat_qq",
+];
+
 export function normalizeOcrProvider(value: string): OcrProviderName {
   return VALID_PROVIDERS.includes(value as OcrProviderName)
+    ? (value as OcrProviderName)
+    : DEFAULT_SETTINGS.defaultOcrProvider;
+}
+
+export function normalizeFreeOcrProvider(value: string): OcrProviderName {
+  return FREE_OCR_PROVIDERS.includes(value as OcrProviderName)
     ? (value as OcrProviderName)
     : DEFAULT_SETTINGS.defaultOcrProvider;
 }
@@ -96,16 +108,29 @@ export async function loadSettings(
   const safeDefaultCommand = validCommands.includes(defaultCommand)
     ? (defaultCommand as "translate" | "capture" | "clipboard")
     : DEFAULT_SETTINGS.defaultCommand;
+  const legacyProvider = await getSetting(
+    api,
+    ctx,
+    "default_ocr_provider",
+    DEFAULT_SETTINGS.defaultOcrProvider,
+  );
+  const serviceTypeFallback = legacyProvider === "llm" ? "llm" : "free";
+  const serviceType = await getSetting(
+    api,
+    ctx,
+    "ocr_service_type",
+    serviceTypeFallback,
+  );
+  const freeProvider = await getSetting(
+    api,
+    ctx,
+    "default_free_ocr_provider",
+    legacyProvider,
+  );
 
   return {
-    defaultOcrProvider: normalizeOcrProvider(
-      await getSetting(
-        api,
-        ctx,
-        "default_ocr_provider",
-        DEFAULT_SETTINGS.defaultOcrProvider,
-      ),
-    ),
+    defaultOcrProvider:
+      serviceType === "llm" ? "llm" : normalizeFreeOcrProvider(freeProvider),
     defaultCommand: safeDefaultCommand,
     providerRows: parseProviderRows(
       await getSetting(api, ctx, "ocr_provider_table", "[]"),

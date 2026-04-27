@@ -1,4 +1,9 @@
-import { normalizeOcrProvider, parseProviderRows } from "../settings";
+import {
+  loadSettings,
+  normalizeFreeOcrProvider,
+  normalizeOcrProvider,
+  parseProviderRows,
+} from "../settings";
 
 describe("settings helpers", () => {
   test("normalizes provider names", () => {
@@ -6,6 +11,8 @@ describe("settings helpers", () => {
     expect(normalizeOcrProvider("snipping_tool")).toBe("snipping_tool");
     expect(normalizeOcrProvider("wechat_qq")).toBe("wechat_qq");
     expect(normalizeOcrProvider("bad")).toBe("windows_app_sdk");
+    expect(normalizeFreeOcrProvider("snipping_tool")).toBe("snipping_tool");
+    expect(normalizeFreeOcrProvider("llm")).toBe("windows_app_sdk");
   });
 
   test("parses provider table rows", () => {
@@ -28,5 +35,37 @@ describe("settings helpers", () => {
 
   test("returns empty rows for invalid json", () => {
     expect(parseProviderRows("not json")).toEqual([]);
+  });
+
+  test("loads no-configuration OCR service selection", async () => {
+    const api = {
+      GetSetting: jest.fn(async (_ctx, key: string) => {
+        const values: Record<string, string> = {
+          ocr_service_type: "free",
+          default_free_ocr_provider: "wechat_qq",
+        };
+        return values[key] || "";
+      }),
+    };
+
+    const settings = await loadSettings(api as never, {} as never);
+
+    expect(settings.defaultOcrProvider).toBe("wechat_qq");
+  });
+
+  test("loads large model OCR service selection", async () => {
+    const api = {
+      GetSetting: jest.fn(async (_ctx, key: string) => {
+        const values: Record<string, string> = {
+          ocr_service_type: "llm",
+          default_free_ocr_provider: "wechat_qq",
+        };
+        return values[key] || "";
+      }),
+    };
+
+    const settings = await loadSettings(api as never, {} as never);
+
+    expect(settings.defaultOcrProvider).toBe("llm");
   });
 });
