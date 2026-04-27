@@ -26,6 +26,11 @@ function stripOuterQuotes(value: string): string {
   return trimmed;
 }
 
+function isTranslateSuffix(word: string): boolean {
+  const w = word.toLowerCase();
+  return w === "translate" || w === "tr";
+}
+
 export function parseCommand(search: string): OcrCommand {
   const trimmed = search.trim();
   if (trimmed === "" || trimmed === "help") {
@@ -33,24 +38,45 @@ export function parseCommand(search: string): OcrCommand {
   }
 
   const lower = trimmed.toLowerCase();
-  if (lower === "capture") {
+
+  // capture / cap
+  if (lower === "capture" || lower === "cap") {
     return { kind: "image", source: "capture", translate: false };
   }
-  if (lower === "translate") {
+
+  // translate / tr (capture + translate)
+  if (lower === "translate" || lower === "tr") {
     return { kind: "image", source: "capture", translate: true };
   }
-  if (lower === "clipboard") {
+
+  // clipboard / cb
+  if (lower === "clipboard" || lower === "cb") {
     return { kind: "image", source: "clipboard", translate: false };
   }
-  if (lower === "clipboard translate" || lower === "translate clipboard") {
+
+  // clipboard translate / cb tr / ... (all combinations)
+  if (
+    lower === "clipboard translate" ||
+    lower === "translate clipboard" ||
+    lower === "clipboard tr" ||
+    lower === "tr clipboard" ||
+    lower === "cb translate" ||
+    lower === "translate cb" ||
+    lower === "cb tr" ||
+    lower === "tr cb"
+  ) {
     return { kind: "image", source: "clipboard", translate: true };
   }
-  if (lower.startsWith("file ")) {
-    let rest = trimmed.slice(5).trim();
+
+  // file <path> [translate|tr] / f <path> [translate|tr]
+  const fileMatch = lower.match(/^(file|f)\s+(.+)/);
+  if (fileMatch) {
+    let rest = trimmed.slice(fileMatch[1].length + 1).trim();
     let translate = false;
-    if (/\s+translate$/i.test(rest)) {
+    const words = rest.split(/\s+/);
+    if (words.length > 0 && isTranslateSuffix(words[words.length - 1])) {
       translate = true;
-      rest = rest.replace(/\s+translate$/i, "").trim();
+      rest = words.slice(0, -1).join(" ");
     }
     const filePath = stripOuterQuotes(rest);
     if (filePath === "") {

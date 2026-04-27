@@ -20,11 +20,11 @@ Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截
 
 Screenshot OCR 支持以下 OCR 服务：
 
-| 类别         | 服务                                                            |
-| ------------ | --------------------------------------------------------------- |
-| 传统 OCR     | 百度、有道、火山、Bing/Azure Vision、Google Cloud Vision        |
-| 大语言模型   | OpenAI 兼容视觉模型                                             |
-| 离线 OCR     | Windows App SDK 本地 OCR、Snipping Tool OCR、微信/QQ OCR        |
+| 类别       | 服务                                                     |
+| ---------- | -------------------------------------------------------- |
+| 传统 OCR   | 百度、有道、火山、Bing/Azure Vision、Google Cloud Vision |
+| 大语言模型 | OpenAI 兼容视觉模型                                      |
+| 离线 OCR   | Windows App SDK 本地 OCR、Snipping Tool OCR、微信/QQ OCR |
 
 说明：
 
@@ -63,15 +63,15 @@ C:\Users\权辉\.wox\wox-user\plugins\76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f@0.1.0
 
 ## 使用
 
-| 命令                        | 说明                            |
-| --------------------------- | ------------------------------- |
-| `ocr`                       | 显示帮助                        |
-| `ocr capture`               | 截取屏幕区域并 OCR              |
-| `ocr clipboard`             | 识别剪贴板中的图片              |
-| `ocr file <path>`           | 识别已有的图片文件              |
-| `ocr translate`             | 截取区域、OCR 并打开 LuxTranslate |
-| `ocr clipboard translate`   | 识别剪贴板图片并打开 LuxTranslate |
-| `ocr file <path> translate` | 识别图片文件并打开 LuxTranslate   |
+| 命令                                            | 说明                              |
+| ----------------------------------------------- | --------------------------------- |
+| `ocr`                                           | 显示帮助                          |
+| `ocr capture` / `ocr cap`                       | 截取屏幕区域并 OCR                |
+| `ocr clipboard` / `ocr cb`                      | 识别剪贴板中的图片                |
+| `ocr file <path>` / `ocr f <path>`              | 识别已有的图片文件                |
+| `ocr translate` / `ocr tr`                      | 截取区域、OCR 并打开 LuxTranslate |
+| `ocr clipboard translate` / `ocr cb tr`         | 识别剪贴板图片并打开 LuxTranslate |
+| `ocr file <path> translate` / `ocr f <path> tr` | 识别图片文件并打开 LuxTranslate   |
 
 推荐 Wox 查询快捷键配置：
 
@@ -194,15 +194,15 @@ Reload Wox plugins after deployment.
 
 ## Usage
 
-| Command                     | Description                                     |
-| --------------------------- | ----------------------------------------------- |
-| `ocr`                       | Show help                                       |
-| `ocr capture`               | Capture a screen region and OCR it              |
-| `ocr clipboard`             | OCR the image currently in the clipboard        |
-| `ocr file <path>`           | OCR an existing image file                      |
-| `ocr translate`             | Capture a region, OCR it, and open LuxTranslate |
-| `ocr clipboard translate`   | OCR clipboard image and open LuxTranslate       |
-| `ocr file <path> translate` | OCR a file and open LuxTranslate                |
+| Command                                         | Description                                     |
+| ----------------------------------------------- | ----------------------------------------------- |
+| `ocr`                                           | Show help                                       |
+| `ocr capture` / `ocr cap`                       | Capture a screen region and OCR it              |
+| `ocr clipboard` / `ocr cb`                      | OCR the image currently in the clipboard        |
+| `ocr file <path>` / `ocr f <path>`              | OCR an existing image file                      |
+| `ocr translate` / `ocr tr`                      | Capture a region, OCR it, and open LuxTranslate |
+| `ocr clipboard translate` / `ocr cb tr`         | OCR clipboard image and open LuxTranslate       |
+| `ocr file <path> translate` / `ocr f <path> tr` | OCR a file and open LuxTranslate                |
 
 Recommended Wox query hotkey:
 
