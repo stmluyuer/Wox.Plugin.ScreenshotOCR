@@ -169,6 +169,7 @@ async function recognizeImage(
     imagePath: image.path,
     settings,
     providerRow,
+    pluginDirectory,
   });
   return {
     text: result.text.trim(),

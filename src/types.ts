@@ -6,6 +6,9 @@ export interface CapturedImage {
 }
 
 export type OcrProviderName =
+  | "windows_app_sdk"
+  | "snipping_tool"
+  | "wechat_qq"
   | "baidu"
   | "youdao"
   | "volcano"
@@ -21,6 +24,7 @@ export interface OcrProviderSettingsRow {
   secretKey?: string;
   appId?: string;
   baseUrl?: string;
+  command?: string;
   model?: string;
   region?: string;
 }
@@ -37,6 +41,7 @@ export interface OcrRequest {
   imagePath: string;
   settings: PluginSettings;
   providerRow?: OcrProviderSettingsRow;
+  pluginDirectory?: string;
 }
 
 export interface OcrResult {

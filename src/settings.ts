@@ -6,7 +6,7 @@ import {
 } from "./types";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-  defaultOcrProvider: "baidu",
+  defaultOcrProvider: "windows_app_sdk",
   providerRows: [],
   requestTimeoutMs: 15000,
   autoTranslateAfterOcr: false,
@@ -14,6 +14,9 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 };
 
 const VALID_PROVIDERS: OcrProviderName[] = [
+  "windows_app_sdk",
+  "snipping_tool",
+  "wechat_qq",
   "baidu",
   "youdao",
   "volcano",

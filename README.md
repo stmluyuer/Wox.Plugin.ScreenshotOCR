@@ -13,7 +13,7 @@ screenshot -> OCR text -> LuxTranslate -> target language
 - `ocr file <path>` recognizes an existing local image.
 - `ocr translate` captures, recognizes, and sends the result to LuxTranslate.
 - Online OCR provider abstraction for traditional OCR APIs and vision-capable large language models.
-- Offline OCR slot reserved for a future built-in recognizer.
+- Offline OCR providers for Windows local OCR, Snipping Tool OCR, and WeChat/QQ OCR.
 - Local deploy script for quick testing in `C:\Users\权辉\.wox\wox-user\plugins`.
 
 ## Providers
@@ -24,7 +24,7 @@ Screenshot OCR supports these provider slots:
 | --------------------- | -------------------------------------------------------------- |
 | Traditional OCR       | Baidu, Youdao, Volcano, Bing/Azure Vision, Google Cloud Vision |
 | Large language models | OpenAI-compatible vision model                                 |
-| Offline OCR           | Reserved, not implemented yet                                  |
+| Offline OCR           | Windows App SDK local OCR, Snipping Tool OCR, WeChat/QQ OCR    |
 
 Notes:
 
@@ -34,6 +34,9 @@ Notes:
 - Bing/Azure Vision requires a Computer Vision endpoint and subscription key.
 - Google Cloud Vision uses API-key based `images:annotate`.
 - The LLM provider uses OpenAI-compatible `chat/completions` with image input.
+- Windows App SDK local OCR runs offline through Windows Runtime OCR and requires Windows 10 or Windows 11.
+- Snipping Tool OCR is declared for Windows 10/11. If a compatible native bridge command is configured, the plugin uses it; otherwise it falls back to the bundled Windows local OCR helper instead of failing.
+- WeChat/QQ OCR requires WeChat or QQ to be installed for the native path. If a compatible native bridge command is configured, the plugin uses it; otherwise it falls back to the bundled Windows local OCR helper instead of failing.
 
 ## Installation
 
@@ -80,8 +83,8 @@ Recommended Wox query hotkey:
 - `Default OCR provider`: provider used by normal OCR commands.
 - `Auto translate after OCR`: sends OCR text to Translate even for non-translate commands.
 - `Translate query prefix`: defaults to `tr`.
-- `Request timeout`: timeout for online OCR calls.
-- `OCR provider settings`: configure credentials, base URLs, models, and regions in the provider table.
+- `Request timeout`: timeout for online OCR calls and local OCR bridge commands.
+- `OCR provider settings`: configure credentials, base URLs, models, regions, and local bridge commands in the provider table.
 
 ## Development
 

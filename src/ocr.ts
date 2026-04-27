@@ -1,6 +1,9 @@
 import { createHash, createHmac, randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { basename } from "node:path";
+import { execFile } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { release } from "node:os";
+import { basename, join } from "node:path";
+import { promisify } from "node:util";
 import {
   OcrProvider,
   OcrProviderName,
@@ -8,6 +11,8 @@ import {
   OcrRequest,
   OcrResult,
 } from "./types";
+
+const execFileAsync = promisify(execFile);
 
 function requireConfig(value: string | undefined, message: string): string {
   if (!value || value.trim() === "") {
@@ -61,6 +66,196 @@ function compactLines(lines: Array<string | undefined | null>): string {
     .map((line) => (line || "").trim())
     .filter(Boolean)
     .join("\n");
+}
+
+function ensureWindows(message: string): void {
+  if (process.platform !== "win32") {
+    throw new Error(message);
+  }
+}
+
+function ensureWindows10OrLater(message: string): void {
+  ensureWindows(message);
+  const major = Number.parseInt(release().split(".")[0] || "0", 10);
+  if (!Number.isFinite(major) || major < 10) {
+    throw new Error(message);
+  }
+}
+
+function parseOcrStdout(stdout: string, providerName: string): string {
+  const text = stdout.trim();
+  if (text === "") return "";
+
+  let parsed:
+    | {
+        text?: string;
+        lines?: Array<string | { text?: string }>;
+        texts?: string[];
+        result?: string;
+        status?: string;
+        message?: string;
+      }
+    | undefined;
+  try {
+    parsed = JSON.parse(text) as {
+      text?: string;
+      lines?: Array<string | { text?: string }>;
+      texts?: string[];
+      result?: string;
+      status?: string;
+      message?: string;
+    };
+  } catch {
+    return text;
+  }
+
+  if (parsed) {
+    if (parsed.status && parsed.status !== "ok") {
+      throw new Error(parsed.message || `${providerName} failed.`);
+    }
+    if (typeof parsed.text === "string") return parsed.text.trim();
+    if (typeof parsed.result === "string") return parsed.result.trim();
+    if (Array.isArray(parsed.texts)) return compactLines(parsed.texts);
+    if (Array.isArray(parsed.lines)) {
+      return compactLines(
+        parsed.lines.map((line) =>
+          typeof line === "string" ? line : line.text,
+        ),
+      );
+    }
+  }
+
+  return text;
+}
+
+async function runLocalCommandOcr(
+  command: string,
+  imagePath: string,
+  timeoutMs: number,
+  providerName: string,
+): Promise<OcrResult> {
+  const result = await runExecutable(command, [imagePath], timeoutMs);
+  return {
+    text: parseOcrStdout(result.stdout, providerName),
+    providerName,
+  };
+}
+
+async function runExecutable(
+  command: string,
+  args: string[],
+  timeoutMs: number,
+): Promise<{ stdout: string; stderr: string }> {
+  try {
+    return await execFileAsync(command, args, {
+      windowsHide: true,
+      timeout: timeoutMs,
+      maxBuffer: 16 * 1024 * 1024,
+    });
+  } catch (error) {
+    const maybe = error as {
+      stdout?: string;
+      stderr?: string;
+      message?: string;
+    };
+    if (maybe.stdout?.trim()) {
+      return { stdout: maybe.stdout, stderr: maybe.stderr || "" };
+    }
+    throw new Error(maybe.stderr?.trim() || maybe.message || String(error));
+  }
+}
+
+async function runBundledWindowsOcr(
+  pluginDirectory: string | undefined,
+  imagePath: string,
+  timeoutMs: number,
+  providerName: string,
+): Promise<OcrResult> {
+  const exePath = join(
+    requireConfig(
+      pluginDirectory,
+      "Plugin directory is required for Windows local OCR.",
+    ),
+    "bin",
+    "WindowsOcr",
+    "WindowsOcr.exe",
+  );
+  if (!existsSync(exePath)) {
+    throw new Error(`Windows local OCR helper was not found: ${exePath}`);
+  }
+  const result = await runExecutable(exePath, [imagePath], timeoutMs);
+  return {
+    text: parseOcrStdout(result.stdout, providerName),
+    providerName,
+  };
+}
+
+export class WindowsAppSdkOcrProvider implements OcrProvider {
+  name: OcrProviderName = "windows_app_sdk";
+
+  async recognize(request: OcrRequest): Promise<OcrResult> {
+    ensureWindows10OrLater(
+      "Windows App SDK local OCR requires Windows 10 or Windows 11.",
+    );
+    return runBundledWindowsOcr(
+      request.pluginDirectory,
+      request.imagePath,
+      request.settings.requestTimeoutMs,
+      "Windows App SDK local OCR",
+    );
+  }
+}
+
+export class SnippingToolOcrProvider implements OcrProvider {
+  name: OcrProviderName = "snipping_tool";
+
+  async recognize(request: OcrRequest): Promise<OcrResult> {
+    ensureWindows10OrLater(
+      "Snipping Tool OCR requires Windows 10 or Windows 11.",
+    );
+    const command = request.providerRow?.command?.trim();
+    if (command) {
+      return runLocalCommandOcr(
+        command,
+        request.imagePath,
+        request.settings.requestTimeoutMs,
+        "Snipping Tool OCR",
+      );
+    }
+
+    return runBundledWindowsOcr(
+      request.pluginDirectory,
+      request.imagePath,
+      request.settings.requestTimeoutMs,
+      "Snipping Tool OCR",
+    );
+  }
+}
+
+export class WechatQqOcrProvider implements OcrProvider {
+  name: OcrProviderName = "wechat_qq";
+
+  async recognize(request: OcrRequest): Promise<OcrResult> {
+    ensureWindows(
+      "WeChat/QQ OCR requires Windows with WeChat or QQ installed.",
+    );
+    const command = request.providerRow?.command?.trim();
+    if (command) {
+      return runLocalCommandOcr(
+        command,
+        request.imagePath,
+        request.settings.requestTimeoutMs,
+        "WeChat/QQ OCR",
+      );
+    }
+
+    return runBundledWindowsOcr(
+      request.pluginDirectory,
+      request.imagePath,
+      request.settings.requestTimeoutMs,
+      "WeChat/QQ OCR",
+    );
+  }
 }
 
 export class BaiduOcrProvider implements OcrProvider {
@@ -446,6 +641,9 @@ export class OfflineOcrProvider implements OcrProvider {
 }
 
 export function createOcrProvider(provider: OcrProviderName): OcrProvider {
+  if (provider === "windows_app_sdk") return new WindowsAppSdkOcrProvider();
+  if (provider === "snipping_tool") return new SnippingToolOcrProvider();
+  if (provider === "wechat_qq") return new WechatQqOcrProvider();
   if (provider === "baidu") return new BaiduOcrProvider();
   if (provider === "youdao") return new YoudaoOcrProvider();
   if (provider === "volcano") return new VolcanoOcrProvider();
@@ -460,6 +658,9 @@ export function providerDisplayName(
   row?: OcrProviderSettingsRow,
 ): string {
   if (row?.name?.trim()) return row.name.trim();
+  if (provider === "windows_app_sdk") return "Windows App SDK local OCR";
+  if (provider === "snipping_tool") return "Snipping Tool OCR";
+  if (provider === "wechat_qq") return "WeChat/QQ OCR";
   if (provider === "baidu") return "Baidu OCR";
   if (provider === "youdao") return "Youdao OCR";
   if (provider === "volcano") return "Volcano OCR";
