@@ -73,6 +73,8 @@ C:\Users\权辉\.wox\wox-user\plugins\76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f@0.1.0
 | `ocr clipboard translate` / `ocr cb tr`         | 识别剪贴板图片并打开 LuxTranslate |
 | `ocr file <path> translate` / `ocr f <path> tr` | 识别图片文件并打开 LuxTranslate   |
 
+在任意可执行命令末尾追加 `--run`、`--go` 或 `!`，可以输入完成后立即执行，不需要按回车。例如 `ocr tr --run`、`ocr cb tr --run`。也可以在设置中开启 `完整命令自动执行`，让识别到的完整命令自动运行。
+
 推荐 Wox 查询快捷键配置：
 
 - 查询内容：`ocr translate`
@@ -82,6 +84,8 @@ C:\Users\权辉\.wox\wox-user\plugins\76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f@0.1.0
 
 - `默认 OCR 服务`：普通 OCR 命令使用的服务。
 - `OCR 后自动翻译`：即使使用非翻译命令，也将 OCR 结果发送到翻译。
+- `完整命令自动执行`：输入完整 OCR 命令后立即执行，不需要按回车。
+- `框选后直接识别（跳过确认）`：截图框选完成后直接开始 OCR，不显示确认工具栏。
 - `翻译查询前缀`：默认为 `tr`。
 - `请求超时`：在线 OCR 调用和本地 OCR 桥接命令的超时时间。
 - `OCR 服务配置`：在服务表格中配置凭证、Base URL、模型、Region 和本地桥接命令。
@@ -204,6 +208,8 @@ Reload Wox plugins after deployment.
 | `ocr clipboard translate` / `ocr cb tr`         | OCR clipboard image and open LuxTranslate       |
 | `ocr file <path> translate` / `ocr f <path> tr` | OCR a file and open LuxTranslate                |
 
+Append `--run`, `--go`, or `!` to any executable command to run it immediately after typing, without pressing Enter. Examples: `ocr tr --run`, `ocr cb tr --run`. You can also enable `Auto execute exact commands` in settings to auto-run recognized complete commands.
+
 Recommended Wox query hotkey:
 
 - Query: `ocr translate`
@@ -213,6 +219,8 @@ Recommended Wox query hotkey:
 
 - `Default OCR provider`: provider used by normal OCR commands.
 - `Auto translate after OCR`: sends OCR text to Translate even for non-translate commands.
+- `Auto execute exact commands`: runs complete OCR commands immediately without pressing Enter.
+- `Skip confirm after selection`: starts OCR after selecting a screenshot region without showing the confirmation toolbar.
 - `Translate query prefix`: defaults to `tr`.
 - `Request timeout`: timeout for online OCR calls and local OCR bridge commands.
 - `OCR provider settings`: configure credentials, base URLs, models, regions, and local bridge commands in the provider table.

@@ -31,6 +31,7 @@ let api: PublicAPI;
 let pluginDirectory = "";
 let screenshotProvider: ScreenshotProvider;
 let clipboardImageProvider: ClipboardImageProvider;
+const runningAutoRuns = new Map<string, string>();
 
 const PLUGIN_ICON: WoxImage = {
   ImageType: "relative",
@@ -89,6 +90,7 @@ async function buildHelpResult(ctx: Context): Promise<Result> {
         `| ocr file <path> / f <path> | ${await t(ctx, "help_preview_file")} |`,
         `| ocr translate / tr | ${await t(ctx, "help_preview_translate")} |`,
         `| ocr clipboard translate / cb tr | ${await t(ctx, "help_preview_clipboard_translate")} |`,
+        `| ocr <command> --run | ${await t(ctx, "help_preview_auto_run")} |`,
       ].join("\n"),
       PreviewProperties: {},
     },
@@ -175,6 +177,26 @@ async function buildImageCommandResult(
         },
       },
     ],
+  };
+}
+
+async function buildAutoRunResult(
+  ctx: Context,
+  resultId: string,
+  source: "capture" | "clipboard" | "file",
+  translate: boolean,
+  filePath?: string,
+): Promise<Result> {
+  const result = await buildImageCommandResult(
+    ctx,
+    source,
+    translate,
+    filePath,
+  );
+  return {
+    ...result,
+    Id: resultId,
+    SubTitle: await t(ctx, "result_auto_running"),
   };
 }
 
@@ -415,6 +437,58 @@ async function runWorkflow(
   }
 }
 
+function autoRunKey(
+  query: Query,
+  source: "capture" | "clipboard" | "file",
+  translate: boolean,
+  filePath?: string,
+): string {
+  const rawSearch =
+    query.Type === "selection" ? query.Selection.Text : query.Search;
+  return [
+    query.Type,
+    query.TriggerKeyword,
+    rawSearch.trim().toLowerCase(),
+    source,
+    translate ? "translate" : "ocr",
+    filePath || "",
+  ].join("|");
+}
+
+function queueAutoRun(
+  ctx: Context,
+  resultId: string,
+  key: string,
+  source: "capture" | "clipboard" | "file",
+  translate: boolean,
+  filePath?: string,
+): void {
+  if (runningAutoRuns.get(key)) {
+    return;
+  }
+
+  runningAutoRuns.set(key, resultId);
+  setTimeout(() => {
+    void runWorkflow(
+      ctx,
+      {
+        ResultId: resultId,
+        ResultActionId: "auto_run",
+        ContextData: {},
+      },
+      source,
+      translate,
+      filePath,
+    ).finally(() => {
+      setTimeout(() => {
+        if (runningAutoRuns.get(key) === resultId) {
+          runningAutoRuns.delete(key);
+        }
+      }, 1500);
+    });
+  }, 0);
+}
+
 export const plugin: Plugin = {
   init: async (ctx: Context, initParams: PluginInitParams) => {
     api = initParams.API;
@@ -442,6 +516,36 @@ export const plugin: Plugin = {
           command.i18nKey,
           command.i18nParams,
           command.fallbackMessage,
+        ),
+      ];
+    }
+    const settings = await loadSettings(api, ctx);
+    if (
+      query.Type === "input" &&
+      (command.autoRun || settings.autoExecuteCommands)
+    ) {
+      const key = autoRunKey(
+        query,
+        command.source,
+        command.translate,
+        command.filePath,
+      );
+      const resultId = runningAutoRuns.get(key) || `auto-run:${query.Id}`;
+      queueAutoRun(
+        ctx,
+        resultId,
+        key,
+        command.source,
+        command.translate,
+        command.filePath,
+      );
+      return [
+        await buildAutoRunResult(
+          ctx,
+          resultId,
+          command.source,
+          command.translate,
+          command.filePath,
         ),
       ];
     }

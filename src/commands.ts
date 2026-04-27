@@ -6,6 +6,7 @@ export type OcrCommand =
       kind: "image";
       source: ImageSource;
       translate: boolean;
+      autoRun: boolean;
       filePath?: string;
     }
   | {
@@ -31,8 +32,24 @@ function isTranslateSuffix(word: string): boolean {
   return w === "translate" || w === "tr";
 }
 
+function extractAutoRunFlag(search: string): {
+  search: string;
+  autoRun: boolean;
+} {
+  const match = search.match(/(?:^|\s)(--run|--go|!)\s*$/i);
+  if (!match) {
+    return { search, autoRun: false };
+  }
+  return {
+    search: search.slice(0, match.index).trimEnd(),
+    autoRun: true,
+  };
+}
+
 export function parseCommand(search: string): OcrCommand {
-  const trimmed = search.trim();
+  const extracted = extractAutoRunFlag(search);
+  const trimmed = extracted.search.trim();
+  const autoRun = extracted.autoRun;
   if (trimmed === "" || trimmed === "help") {
     return { kind: "help" };
   }
@@ -41,17 +58,17 @@ export function parseCommand(search: string): OcrCommand {
 
   // capture / cap
   if (lower === "capture" || lower === "cap") {
-    return { kind: "image", source: "capture", translate: false };
+    return { kind: "image", source: "capture", translate: false, autoRun };
   }
 
   // translate / tr (capture + translate)
   if (lower === "translate" || lower === "tr") {
-    return { kind: "image", source: "capture", translate: true };
+    return { kind: "image", source: "capture", translate: true, autoRun };
   }
 
   // clipboard / cb
   if (lower === "clipboard" || lower === "cb") {
-    return { kind: "image", source: "clipboard", translate: false };
+    return { kind: "image", source: "clipboard", translate: false, autoRun };
   }
 
   // clipboard translate / cb tr / ... (all combinations)
@@ -65,7 +82,7 @@ export function parseCommand(search: string): OcrCommand {
     lower === "cb tr" ||
     lower === "tr cb"
   ) {
-    return { kind: "image", source: "clipboard", translate: true };
+    return { kind: "image", source: "clipboard", translate: true, autoRun };
   }
 
   // file <path> [translate|tr] / f <path> [translate|tr]
@@ -87,7 +104,7 @@ export function parseCommand(search: string): OcrCommand {
         fallbackMessage: "Image file path is empty.",
       };
     }
-    return { kind: "image", source: "file", translate, filePath };
+    return { kind: "image", source: "file", translate, autoRun, filePath };
   }
 
   return {

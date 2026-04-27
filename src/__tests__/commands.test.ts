@@ -6,11 +6,13 @@ describe("parseCommand", () => {
       kind: "image",
       source: "capture",
       translate: false,
+      autoRun: false,
     });
     expect(parseCommand("cap")).toEqual({
       kind: "image",
       source: "capture",
       translate: false,
+      autoRun: false,
     });
   });
 
@@ -19,11 +21,13 @@ describe("parseCommand", () => {
       kind: "image",
       source: "capture",
       translate: true,
+      autoRun: false,
     });
     expect(parseCommand("tr")).toEqual({
       kind: "image",
       source: "capture",
       translate: true,
+      autoRun: false,
     });
   });
 
@@ -32,16 +36,23 @@ describe("parseCommand", () => {
       kind: "image",
       source: "clipboard",
       translate: false,
+      autoRun: false,
     });
     expect(parseCommand("cb")).toEqual({
       kind: "image",
       source: "clipboard",
       translate: false,
+      autoRun: false,
     });
   });
 
   test("parses clipboard translate command combinations", () => {
-    const expected = { kind: "image", source: "clipboard", translate: true };
+    const expected = {
+      kind: "image",
+      source: "clipboard",
+      translate: true,
+      autoRun: false,
+    };
 
     expect(parseCommand("clipboard translate")).toEqual(expected);
     expect(parseCommand("translate clipboard")).toEqual(expected);
@@ -58,12 +69,14 @@ describe("parseCommand", () => {
       kind: "image",
       source: "file",
       translate: false,
+      autoRun: false,
       filePath: "C:\\Temp\\shot.png",
     });
     expect(parseCommand('f "C:\\Temp\\shot.png"')).toEqual({
       kind: "image",
       source: "file",
       translate: false,
+      autoRun: false,
       filePath: "C:\\Temp\\shot.png",
     });
   });
@@ -73,6 +86,7 @@ describe("parseCommand", () => {
       kind: "image",
       source: "file",
       translate: true,
+      autoRun: false,
       filePath: "C:\\Temp\\shot.png",
     };
 
@@ -92,6 +106,28 @@ describe("parseCommand", () => {
     const r2 = parseCommand("f /tmp/img.png");
     expect(r2.kind).toBe("image");
     if (r2.kind === "image") expect(r2.filePath).toBe("/tmp/img.png");
+  });
+
+  test("parses one-time auto-run flag", () => {
+    expect(parseCommand("tr --run")).toEqual({
+      kind: "image",
+      source: "capture",
+      translate: true,
+      autoRun: true,
+    });
+    expect(parseCommand("cb tr !")).toEqual({
+      kind: "image",
+      source: "clipboard",
+      translate: true,
+      autoRun: true,
+    });
+    expect(parseCommand('f "C:\\Temp\\shot.png" tr --go')).toEqual({
+      kind: "image",
+      source: "file",
+      translate: true,
+      autoRun: true,
+      filePath: "C:\\Temp\\shot.png",
+    });
   });
 
   test("builds translate query", () => {

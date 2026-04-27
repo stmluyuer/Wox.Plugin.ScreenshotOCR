@@ -26,6 +26,8 @@
       "settings_timeout": "Request timeout",
       "settings_translate_prefix": "Translate query prefix",
       "settings_auto_translate": "Auto translate after OCR",
+      "settings_auto_execute": "Auto execute exact commands",
+      "settings_auto_execute_tip": "Run a recognized OCR command as soon as it is typed, without pressing Enter. You can also append --run to a command for one-time auto execution.",
       "settings_skip_confirm": "Skip confirm after selection",
       "settings_provider_table": "OCR provider settings",
       "settings_provider_table_tip": "Configure online OCR providers. Fields not needed by a provider can stay empty.",
@@ -58,6 +60,7 @@
       "help_preview_file": "Recognize an existing image file",
       "help_preview_translate": "Capture, recognize, and send text to Translate",
       "help_preview_clipboard_translate": "Recognize clipboard image and send text to Translate",
+      "help_preview_auto_run": "Execute immediately without pressing Enter",
       "unknown_help_subtitle": "Type ocr for help.",
       "action_capture": "Capture region and OCR",
       "action_clipboard": "Read clipboard image and OCR",
@@ -67,6 +70,7 @@
       "action_copy_text": "Copy recognized text",
       "action_translate_text": "Translate recognized text",
       "result_ready": "Ready",
+      "result_auto_running": "Executing automatically...",
       "result_processing": "Recognizing text...",
       "result_capture_processing": "Select a region to recognize",
       "result_clipboard_processing": "Reading clipboard image...",
@@ -125,6 +129,8 @@
       "settings_timeout": "请求超时",
       "settings_translate_prefix": "翻译查询前缀",
       "settings_auto_translate": "OCR 后自动翻译",
+      "settings_auto_execute": "完整命令自动执行",
+      "settings_auto_execute_tip": "输入可识别的 OCR 命令后立即执行，不需要按回车。也可以在命令末尾追加 --run 来单次自动执行。",
       "settings_skip_confirm": "框选后直接识别（跳过确认）",
       "settings_provider_table": "OCR 服务配置",
       "settings_provider_table_tip": "配置在线 OCR 服务。不需要的字段可以留空。",
@@ -157,6 +163,7 @@
       "help_preview_file": "识别已有的图片文件",
       "help_preview_translate": "截图、识别并发送到翻译",
       "help_preview_clipboard_translate": "识别剪贴板图片并发送到翻译",
+      "help_preview_auto_run": "不按回车，输入后立即执行",
       "unknown_help_subtitle": "输入 ocr 获取帮助。",
       "action_capture": "截图并 OCR",
       "action_clipboard": "读取剪贴板图片并 OCR",
@@ -166,6 +173,7 @@
       "action_copy_text": "复制识别文本",
       "action_translate_text": "翻译识别文本",
       "result_ready": "准备就绪",
+      "result_auto_running": "正在自动执行...",
       "result_processing": "正在识别文字...",
       "result_capture_processing": "选择要识别的区域",
       "result_clipboard_processing": "正在读取剪贴板图片...",
@@ -256,6 +264,16 @@
       "Value": {
         "Key": "auto_translate_after_ocr",
         "Label": "i18n:settings_auto_translate",
+        "DefaultValue": "false",
+        "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "auto_execute_commands",
+        "Label": "i18n:settings_auto_execute",
+        "Tooltip": "i18n:settings_auto_execute_tip",
         "DefaultValue": "false",
         "Style": { "Width": 360 }
       }

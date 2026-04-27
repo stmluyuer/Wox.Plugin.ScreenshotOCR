@@ -46,6 +46,7 @@ export interface PluginSettings {
   providerRows: OcrProviderSettingsRow[];
   requestTimeoutMs: number;
   autoTranslateAfterOcr: boolean;
+  autoExecuteCommands: boolean;
   skipConfirmAfterSelection: boolean;
   translateQueryPrefix: string;
 }
