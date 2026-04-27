@@ -124,14 +124,9 @@ public sealed class WoxSnipOverlayForm : Form {
     int totalW = btnW * 3 + padding * 4;
     int totalH = btnH + padding * 2;
 
-    // position: below selection, fallback above
-    int barX = selection.Left + (selection.Width - totalW) / 2;
-    int barY = selection.Bottom + 12;
-    if (barY + totalH > ClientSize.Height) {
-      barY = selection.Top - totalH - 12;
-    }
-    if (barY < 0) barY = selection.Bottom - totalH - 6;
-    if (barY < 0) barY = 0;
+    // position: fixed at bottom-right corner
+    int barX = ClientSize.Width - totalW - 16;
+    int barY = ClientSize.Height - totalH - 40;
 
     // bar background
     Rectangle barRect = new Rectangle(barX, barY, totalW, totalH);
@@ -314,11 +309,8 @@ public sealed class WoxSnipOverlayForm : Form {
     int btnW = 90, btnH = 34, padding = 7;
     int totalW = btnW * 3 + padding * 4;
     int totalH = btnH + padding * 2;
-    int barX = selection.Left + (selection.Width - totalW) / 2;
-    int barY = selection.Bottom + 12;
-    if (barY + totalH > ClientSize.Height) barY = selection.Top - totalH - 12;
-    if (barY < 0) barY = selection.Bottom - totalH - 6;
-    if (barY < 0) barY = 0;
+    int barX = ClientSize.Width - totalW - 16;
+    int barY = ClientSize.Height - totalH - 40;
     Invalidate(new Rectangle(barX, barY, totalW, totalH), false);
   }
 
