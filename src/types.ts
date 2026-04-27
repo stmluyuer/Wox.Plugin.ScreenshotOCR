@@ -42,6 +42,7 @@ export interface OcrProviderSettingsRow {
 
 export interface PluginSettings {
   defaultOcrProvider: OcrProviderName;
+  defaultCommand: "translate" | "capture" | "clipboard";
   providerRows: OcrProviderSettingsRow[];
   requestTimeoutMs: number;
   autoTranslateAfterOcr: boolean;

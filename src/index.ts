@@ -64,7 +64,14 @@ async function buildHelpResult(ctx: Context): Promise<Result> {
   const cmd = await t(ctx, "help_preview_command");
   const desc = await t(ctx, "help_preview_description");
   const title = await t(ctx, "help_title");
-  const defaultActionName = await t(ctx, "action_translate_capture");
+  const settings = await loadSettings(api, ctx);
+  const def = settings.defaultCommand;
+  const actionName =
+    def === "clipboard"
+      ? await t(ctx, "action_clipboard")
+      : def === "capture"
+        ? await t(ctx, "action_capture")
+        : await t(ctx, "action_translate_capture");
   return {
     Title: title,
     SubTitle: await t(ctx, "help_subtitle"),
@@ -87,11 +94,20 @@ async function buildHelpResult(ctx: Context): Promise<Result> {
     },
     Actions: [
       {
-        Name: defaultActionName,
+        Name: actionName,
         IsDefault: true,
         PreventHideAfterAction: true,
         Action: async (actionCtx: Context, actionContext: ActionContext) => {
-          await runWorkflow(actionCtx, actionContext, "capture", true);
+          if (def === "clipboard") {
+            await runWorkflow(actionCtx, actionContext, "clipboard", false);
+          } else {
+            await runWorkflow(
+              actionCtx,
+              actionContext,
+              "capture",
+              def === "translate",
+            );
+          }
         },
       },
     ],

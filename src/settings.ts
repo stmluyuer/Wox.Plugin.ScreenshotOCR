@@ -7,6 +7,7 @@ import {
 
 export const DEFAULT_SETTINGS: PluginSettings = {
   defaultOcrProvider: "windows_app_sdk",
+  defaultCommand: "translate",
   providerRows: [],
   requestTimeoutMs: 15000,
   autoTranslateAfterOcr: false,
@@ -83,6 +84,17 @@ export async function loadSettings(
   );
   const timeoutMs = Number.parseInt(timeoutRaw, 10);
 
+  const defaultCommand = await getSetting(
+    api,
+    ctx,
+    "default_command",
+    "translate",
+  );
+  const validCommands = ["translate", "capture", "clipboard"];
+  const safeDefaultCommand = validCommands.includes(defaultCommand)
+    ? (defaultCommand as "translate" | "capture" | "clipboard")
+    : DEFAULT_SETTINGS.defaultCommand;
+
   return {
     defaultOcrProvider: normalizeOcrProvider(
       await getSetting(
@@ -92,6 +104,7 @@ export async function loadSettings(
         DEFAULT_SETTINGS.defaultOcrProvider,
       ),
     ),
+    defaultCommand: safeDefaultCommand,
     providerRows: parseProviderRows(
       await getSetting(api, ctx, "ocr_provider_table", "[]"),
     ),

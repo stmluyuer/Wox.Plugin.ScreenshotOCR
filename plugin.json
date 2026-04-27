@@ -16,6 +16,11 @@
       "plugin_name": "Screenshot OCR",
       "plugin_description": "Capture or read images, recognize text with online OCR, and send text to LuxTranslate",
       "settings_group_basic": "Basic behavior",
+      "settings_default_command": "Default behavior on Enter",
+      "settings_default_command_tip": "Action when pressing Enter on ocr help. ocr tr: capture and translate. ocr capture: capture and OCR only. ocr clipboard: read clipboard and OCR.",
+      "settings_option_translate": "ocr tr — Capture, OCR, and translate",
+      "settings_option_capture": "ocr capture — Capture and OCR only",
+      "settings_option_clipboard": "ocr clipboard — Read clipboard and OCR",
       "settings_group_providers": "OCR providers",
       "settings_default_provider": "Default OCR provider",
       "settings_timeout": "Request timeout",
@@ -109,6 +114,11 @@
       "plugin_name": "截图 OCR",
       "plugin_description": "截图或读取图片，使用在线 OCR 识别文字，并发送给 LuxTranslate 翻译",
       "settings_group_basic": "基础行为",
+      "settings_default_command": "回车默认行为",
+      "settings_default_command_tip": "在 ocr 帮助界面按回车时执行的操作。ocr tr：截图并翻译。ocr capture：仅截图并 OCR。ocr clipboard：读取剪贴板并 OCR。",
+      "settings_option_translate": "ocr tr — 截图、OCR 并翻译",
+      "settings_option_capture": "ocr capture — 仅截图并 OCR",
+      "settings_option_clipboard": "ocr clipboard — 读取剪贴板并 OCR",
       "settings_group_providers": "OCR 服务",
       "settings_default_provider": "默认 OCR 服务",
       "settings_timeout": "请求超时",
@@ -245,6 +255,30 @@
         "Key": "auto_translate_after_ocr",
         "Label": "i18n:settings_auto_translate",
         "DefaultValue": "false",
+        "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "select",
+      "Value": {
+        "Key": "default_command",
+        "Label": "i18n:settings_default_command",
+        "Tooltip": "i18n:settings_default_command_tip",
+        "DefaultValue": "translate",
+        "Options": [
+          {
+            "Label": "i18n:settings_option_translate",
+            "Value": "translate"
+          },
+          {
+            "Label": "i18n:settings_option_capture",
+            "Value": "capture"
+          },
+          {
+            "Label": "i18n:settings_option_clipboard",
+            "Value": "clipboard"
+          }
+        ],
         "Style": { "Width": 360 }
       }
     },
