@@ -1,0 +1,274 @@
+{
+  "Id": "76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f",
+  "TriggerKeywords": ["ocr", "截图识别"],
+  "Name": "i18n:plugin_name",
+  "Description": "i18n:plugin_description",
+  "Author": "quanhui",
+  "Version": "0.1.0",
+  "MinWoxVersion": "2.0.0",
+  "Runtime": "nodejs",
+  "Website": "https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR",
+  "Entry": "index.js",
+  "Icon": "relative:images/app.svg",
+  "SupportedOS": ["windows", "linux", "darwin"],
+  "I18n": {
+    "en_US": {
+      "plugin_name": "Screenshot OCR",
+      "plugin_description": "Capture or read images, recognize text with online OCR, and send text to LuxTranslate",
+      "settings_group_basic": "Basic behavior",
+      "settings_group_providers": "OCR providers",
+      "settings_default_provider": "Default OCR provider",
+      "settings_timeout": "Request timeout",
+      "settings_translate_prefix": "Translate query prefix",
+      "settings_auto_translate": "Auto translate after OCR",
+      "settings_provider_table": "OCR provider settings",
+      "settings_provider_table_tip": "Configure online OCR providers. Fields not needed by a provider can stay empty.",
+      "table_name": "Name",
+      "table_provider": "Provider",
+      "table_api_key": "API key",
+      "table_secret_key": "Secret key",
+      "table_app_id": "App ID",
+      "table_base_url": "Base URL",
+      "table_model": "Model",
+      "table_region": "Region",
+      "provider_baidu": "Baidu OCR",
+      "provider_youdao": "Youdao OCR",
+      "provider_volcano": "Volcano OCR",
+      "provider_bing": "Bing/Azure Vision",
+      "provider_google_vision": "Google Cloud Vision",
+      "provider_llm": "OpenAI-compatible vision model",
+      "provider_offline": "Offline OCR (reserved)",
+      "help_title": "Screenshot OCR",
+      "help_subtitle": "Use ocr capture, ocr clipboard, ocr file <path>, or ocr translate",
+      "action_capture": "Capture region and OCR",
+      "action_clipboard": "Read clipboard image and OCR",
+      "action_file": "Recognize image file",
+      "action_translate_capture": "Capture, OCR, and translate",
+      "action_translate_clipboard": "Read clipboard image, OCR, and translate",
+      "action_copy_text": "Copy recognized text",
+      "action_translate_text": "Translate recognized text",
+      "result_ready": "Ready",
+      "result_processing": "Recognizing text...",
+      "result_capture_processing": "Select a region to recognize",
+      "result_clipboard_processing": "Reading clipboard image...",
+      "result_no_clipboard_image": "Clipboard has no image",
+      "result_cancelled": "Capture cancelled",
+      "result_failed": "OCR failed",
+      "result_empty": "No text recognized",
+      "preview_source_image": "Source image",
+      "preview_provider": "Provider",
+      "preview_text": "Recognized text"
+    },
+    "zh_CN": {
+      "plugin_name": "截图 OCR",
+      "plugin_description": "截图或读取图片，使用在线 OCR 识别文字，并发送给 LuxTranslate 翻译",
+      "settings_group_basic": "基础行为",
+      "settings_group_providers": "OCR 服务",
+      "settings_default_provider": "默认 OCR 服务",
+      "settings_timeout": "请求超时",
+      "settings_translate_prefix": "翻译查询前缀",
+      "settings_auto_translate": "OCR 后自动翻译",
+      "settings_provider_table": "OCR 服务配置",
+      "settings_provider_table_tip": "配置在线 OCR 服务。不需要的字段可以留空。",
+      "table_name": "名称",
+      "table_provider": "服务",
+      "table_api_key": "API Key",
+      "table_secret_key": "Secret Key",
+      "table_app_id": "App ID",
+      "table_base_url": "Base URL",
+      "table_model": "模型",
+      "table_region": "Region",
+      "provider_baidu": "百度 OCR",
+      "provider_youdao": "有道 OCR",
+      "provider_volcano": "火山 OCR",
+      "provider_bing": "Bing/Azure Vision",
+      "provider_google_vision": "Google Cloud Vision",
+      "provider_llm": "OpenAI 兼容视觉模型",
+      "provider_offline": "离线 OCR（预留）",
+      "help_title": "截图 OCR",
+      "help_subtitle": "使用 ocr capture、ocr clipboard、ocr file <path> 或 ocr translate",
+      "action_capture": "截图并 OCR",
+      "action_clipboard": "读取剪贴板图片并 OCR",
+      "action_file": "识别图片文件",
+      "action_translate_capture": "截图、OCR 并翻译",
+      "action_translate_clipboard": "读取剪贴板图片、OCR 并翻译",
+      "action_copy_text": "复制识别文本",
+      "action_translate_text": "翻译识别文本",
+      "result_ready": "准备就绪",
+      "result_processing": "正在识别文字...",
+      "result_capture_processing": "选择要识别的区域",
+      "result_clipboard_processing": "正在读取剪贴板图片...",
+      "result_no_clipboard_image": "剪贴板中没有图片",
+      "result_cancelled": "截图已取消",
+      "result_failed": "OCR 失败",
+      "result_empty": "未识别到文字",
+      "preview_source_image": "来源图片",
+      "preview_provider": "服务",
+      "preview_text": "识别文本"
+    }
+  },
+  "Features": [
+    {
+      "Name": "debounce",
+      "Params": {
+        "IntervalMs": 200
+      }
+    }
+  ],
+  "SettingDefinitions": [
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "i18n:settings_group_basic",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "select",
+      "Value": {
+        "Key": "default_ocr_provider",
+        "Label": "i18n:settings_default_provider",
+        "DefaultValue": "baidu",
+        "Options": [
+          { "Label": "i18n:provider_baidu", "Value": "baidu" },
+          { "Label": "i18n:provider_youdao", "Value": "youdao" },
+          { "Label": "i18n:provider_volcano", "Value": "volcano" },
+          { "Label": "i18n:provider_bing", "Value": "bing" },
+          { "Label": "i18n:provider_google_vision", "Value": "google_vision" },
+          { "Label": "i18n:provider_llm", "Value": "llm" },
+          { "Label": "i18n:provider_offline", "Value": "offline" }
+        ],
+        "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "auto_translate_after_ocr",
+        "Label": "i18n:settings_auto_translate",
+        "DefaultValue": "false",
+        "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "translate_query_prefix",
+        "Label": "i18n:settings_translate_prefix",
+        "DefaultValue": "tr",
+        "MaxLines": 1,
+        "Style": { "Width": 220 }
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "request_timeout_ms",
+        "Label": "i18n:settings_timeout",
+        "DefaultValue": "15000",
+        "Suffix": "ms",
+        "MaxLines": 1,
+        "Validators": [
+          {
+            "Type": "is_number",
+            "Value": { "IsInteger": true, "IsFloat": false }
+          }
+        ],
+        "Style": { "Width": 220 }
+      }
+    },
+    {
+      "Type": "newline",
+      "Value": {
+        "Style": {}
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "i18n:settings_group_providers",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "table",
+      "Value": {
+        "Key": "ocr_provider_table",
+        "Title": "i18n:settings_provider_table",
+        "Tooltip": "i18n:settings_provider_table_tip",
+        "DefaultValue": "[{\"name\":\"Baidu\",\"provider\":\"baidu\",\"apiKey\":\"\",\"secretKey\":\"\"},{\"name\":\"Youdao\",\"provider\":\"youdao\",\"apiKey\":\"\",\"secretKey\":\"\",\"appId\":\"\"},{\"name\":\"Volcano\",\"provider\":\"volcano\",\"apiKey\":\"\",\"secretKey\":\"\",\"region\":\"cn-north-1\"},{\"name\":\"Bing/Azure Vision\",\"provider\":\"bing\",\"apiKey\":\"\",\"baseUrl\":\"\"},{\"name\":\"Google Cloud Vision\",\"provider\":\"google_vision\",\"apiKey\":\"\",\"baseUrl\":\"https://vision.googleapis.com/v1\"},{\"name\":\"Vision LLM\",\"provider\":\"llm\",\"apiKey\":\"\",\"baseUrl\":\"https://api.openai.com/v1\",\"model\":\"gpt-4o-mini\"}]",
+        "SortColumnKey": "name",
+        "SortOrder": "asc",
+        "MaxHeight": 320,
+        "Columns": [
+          {
+            "Key": "name",
+            "Label": "i18n:table_name",
+            "Type": "text",
+            "Width": 150
+          },
+          {
+            "Key": "provider",
+            "Label": "i18n:table_provider",
+            "Type": "select",
+            "Width": 190,
+            "SelectOptions": [
+              { "Label": "i18n:provider_baidu", "Value": "baidu" },
+              { "Label": "i18n:provider_youdao", "Value": "youdao" },
+              { "Label": "i18n:provider_volcano", "Value": "volcano" },
+              { "Label": "i18n:provider_bing", "Value": "bing" },
+              {
+                "Label": "i18n:provider_google_vision",
+                "Value": "google_vision"
+              },
+              { "Label": "i18n:provider_llm", "Value": "llm" }
+            ]
+          },
+          {
+            "Key": "apiKey",
+            "Label": "i18n:table_api_key",
+            "Type": "text",
+            "Width": 320,
+            "HideInTable": true
+          },
+          {
+            "Key": "secretKey",
+            "Label": "i18n:table_secret_key",
+            "Type": "text",
+            "Width": 320,
+            "HideInTable": true
+          },
+          {
+            "Key": "appId",
+            "Label": "i18n:table_app_id",
+            "Type": "text",
+            "Width": 220,
+            "HideInTable": true
+          },
+          {
+            "Key": "baseUrl",
+            "Label": "i18n:table_base_url",
+            "Type": "text",
+            "Width": 360,
+            "HideInTable": true
+          },
+          {
+            "Key": "model",
+            "Label": "i18n:table_model",
+            "Type": "text",
+            "Width": 240,
+            "HideInTable": true
+          },
+          {
+            "Key": "region",
+            "Label": "i18n:table_region",
+            "Type": "text",
+            "Width": 180,
+            "HideInTable": true
+          }
+        ],
+        "Style": { "Width": 780 }
+      }
+    }
+  ]
+}
