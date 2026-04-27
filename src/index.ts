@@ -64,6 +64,7 @@ async function buildHelpResult(ctx: Context): Promise<Result> {
   const cmd = await t(ctx, "help_preview_command");
   const desc = await t(ctx, "help_preview_description");
   const title = await t(ctx, "help_title");
+  const defaultActionName = await t(ctx, "action_translate_capture");
   return {
     Title: title,
     SubTitle: await t(ctx, "help_subtitle"),
@@ -84,6 +85,16 @@ async function buildHelpResult(ctx: Context): Promise<Result> {
       ].join("\n"),
       PreviewProperties: {},
     },
+    Actions: [
+      {
+        Name: defaultActionName,
+        IsDefault: true,
+        PreventHideAfterAction: true,
+        Action: async (actionCtx: Context, actionContext: ActionContext) => {
+          await runWorkflow(actionCtx, actionContext, "capture", true);
+        },
+      },
+    ],
   };
 }
 
