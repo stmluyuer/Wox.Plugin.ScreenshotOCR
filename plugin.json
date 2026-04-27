@@ -26,6 +26,7 @@
       "settings_timeout": "Request timeout",
       "settings_translate_prefix": "Translate query prefix",
       "settings_auto_translate": "Auto translate after OCR",
+      "settings_skip_confirm": "Skip confirm after selection",
       "settings_provider_table": "OCR provider settings",
       "settings_provider_table_tip": "Configure online OCR providers. Fields not needed by a provider can stay empty.",
       "table_name": "Name",
@@ -124,6 +125,7 @@
       "settings_timeout": "请求超时",
       "settings_translate_prefix": "翻译查询前缀",
       "settings_auto_translate": "OCR 后自动翻译",
+      "settings_skip_confirm": "框选后直接识别（跳过确认）",
       "settings_provider_table": "OCR 服务配置",
       "settings_provider_table_tip": "配置在线 OCR 服务。不需要的字段可以留空。",
       "table_name": "名称",
@@ -254,6 +256,15 @@
       "Value": {
         "Key": "auto_translate_after_ocr",
         "Label": "i18n:settings_auto_translate",
+        "DefaultValue": "false",
+        "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "skip_confirm_after_selection",
+        "Label": "i18n:settings_skip_confirm",
         "DefaultValue": "false",
         "Style": { "Width": 360 }
       }

@@ -44,6 +44,7 @@ function cachePath(cacheDirectory: string, prefix: string): string {
 async function runPowerShellJson(
   scriptPath: string,
   outputPath: string,
+  extraArgs: string[] = [],
 ): Promise<{
   status?: string;
   path?: string;
@@ -72,6 +73,7 @@ async function runPowerShellJson(
         scriptPath,
         "-OutputPath",
         outputPath,
+        ...extraArgs,
       ],
       {
         windowsHide: true,
@@ -130,14 +132,18 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
       options.cacheDirectory || join(tmpdir(), "wox-screenshot-ocr");
   }
 
-  async captureRegion(): Promise<CapturedImage | null> {
+  async captureRegion(skipConfirm = false): Promise<CapturedImage | null> {
     const outputPath = cachePath(this.cacheDirectory, "capture");
     const scriptPath = join(
       this.pluginDirectory,
       "scripts",
       "capture-windows.ps1",
     );
-    const result = await runPowerShellJson(scriptPath, outputPath);
+    const args: string[] = [];
+    if (skipConfirm) {
+      args.push("-SkipConfirm");
+    }
+    const result = await runPowerShellJson(scriptPath, outputPath, args);
     if (result.status === "cancelled") {
       return null;
     }

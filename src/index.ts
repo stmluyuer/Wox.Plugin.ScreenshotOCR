@@ -181,6 +181,7 @@ async function buildImageCommandResult(
 async function resolveImage(
   ctx: Context,
   source: "capture" | "clipboard" | "file",
+  skipConfirm: boolean,
   filePath?: string,
 ): Promise<CapturedImage | null> {
   if (source === "file") {
@@ -196,7 +197,7 @@ async function resolveImage(
 
   if (source === "capture") {
     await api.HideApp(ctx);
-    return screenshotProvider.captureRegion();
+    return screenshotProvider.captureRegion(skipConfirm);
   }
 
   return clipboardImageProvider.readImage();
@@ -275,7 +276,12 @@ async function runWorkflow(
           : await t(ctx, "result_processing"),
     );
 
-    const image = await resolveImage(ctx, source, filePath);
+    const image = await resolveImage(
+      ctx,
+      source,
+      settings.skipConfirmAfterSelection,
+      filePath,
+    );
     if (!image) {
       const title =
         source === "clipboard"

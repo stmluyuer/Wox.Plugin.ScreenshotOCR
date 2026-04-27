@@ -46,6 +46,7 @@ export interface PluginSettings {
   providerRows: OcrProviderSettingsRow[];
   requestTimeoutMs: number;
   autoTranslateAfterOcr: boolean;
+  skipConfirmAfterSelection: boolean;
   translateQueryPrefix: string;
 }
 
@@ -68,7 +69,7 @@ export interface OcrProvider {
 }
 
 export interface ScreenshotProvider {
-  captureRegion(): Promise<CapturedImage | null>;
+  captureRegion(skipConfirm?: boolean): Promise<CapturedImage | null>;
 }
 
 export interface ClipboardImageProvider {

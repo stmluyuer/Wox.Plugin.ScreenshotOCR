@@ -1,6 +1,7 @@
 ﻿param(
   [Parameter(Mandatory = $true)]
-  [string]$OutputPath
+  [string]$OutputPath,
+  [switch]$SkipConfirm
 )
 
 Add-Type -ReferencedAssemblies System.Windows.Forms,System.Drawing @"
@@ -23,6 +24,7 @@ public static class WoxScreenshotNative {
 public sealed class WoxSnipOverlayForm : Form {
   private readonly Bitmap desktopBitmap;
   private readonly string outputPath;
+  private readonly bool skipConfirm;
   private bool dragging;
   private Point startPoint;
   private Point currentPoint;
@@ -48,9 +50,10 @@ public sealed class WoxSnipOverlayForm : Form {
     }
   }
 
-  public WoxSnipOverlayForm(Rectangle bounds, Bitmap desktopBitmap, string outputPath) {
+  public WoxSnipOverlayForm(Rectangle bounds, Bitmap desktopBitmap, string outputPath, bool skipConfirm) {
     this.desktopBitmap = desktopBitmap;
     this.outputPath = outputPath;
+    this.skipConfirm = skipConfirm;
     this.FormBorderStyle = FormBorderStyle.None;
     this.StartPosition = FormStartPosition.Manual;
     this.Bounds = bounds;
@@ -227,6 +230,9 @@ public sealed class WoxSnipOverlayForm : Form {
     dragging = false;
     currentPoint = e.Location;
     SetSelection(RectangleFromPoints(startPoint, currentPoint));
+    if (skipConfirm && EnsureMinSelection()) {
+      CompleteCapture();
+    }
   }
 
   protected override void OnMouseDoubleClick(MouseEventArgs e) {
@@ -376,7 +382,7 @@ $graphics = [System.Drawing.Graphics]::FromImage($desktopBitmap)
 $graphics.CopyFromScreen($screenBounds.Left, $screenBounds.Top, 0, 0, $screenBounds.Size)
 $graphics.Dispose()
 
-$form = [WoxSnipOverlayForm]::new($screenBounds, $desktopBitmap, $OutputPath)
+$form = [WoxSnipOverlayForm]::new($screenBounds, $desktopBitmap, $OutputPath, $SkipConfirm)
 [System.Windows.Forms.Application]::Run($form)
 
 if ($form.Completed) {

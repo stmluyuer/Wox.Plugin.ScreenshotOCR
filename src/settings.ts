@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   providerRows: [],
   requestTimeoutMs: 15000,
   autoTranslateAfterOcr: false,
+  skipConfirmAfterSelection: false,
   translateQueryPrefix: "tr",
 };
 
@@ -118,6 +119,13 @@ export async function loadSettings(
         ctx,
         "auto_translate_after_ocr",
         String(DEFAULT_SETTINGS.autoTranslateAfterOcr),
+      )) === "true",
+    skipConfirmAfterSelection:
+      (await getSetting(
+        api,
+        ctx,
+        "skip_confirm_after_selection",
+        String(DEFAULT_SETTINGS.skipConfirmAfterSelection),
       )) === "true",
     translateQueryPrefix:
       (
