@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
@@ -36,10 +36,16 @@ export interface ScriptPlatformOptions {
   cacheDirectory?: string;
 }
 
-interface ScreenshotHistoryItem {
-  path: string;
-  mtimeMs: number;
-  size: number;
+interface CaptureScreenshotResult {
+  status?: "completed" | "cancelled" | "failed";
+  screenshotPath?: string;
+  errorMessage?: string;
+}
+
+interface WoxRestResponse<T> {
+  Success?: boolean;
+  Message?: string;
+  Data?: T;
 }
 
 function cachePath(cacheDirectory: string, prefix: string): string {
@@ -131,48 +137,14 @@ function parseScriptJson(stdout: string): {
   }
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function listScreenshotHistory(directory: string): ScreenshotHistoryItem[] {
-  if (!existsSync(directory)) {
-    return [];
+function getWoxServerPort(): number {
+  const lockPath = join(homedir(), ".wox", "wox.lock");
+  const raw = readFileSync(lockPath, "utf8").trim();
+  const port = Number.parseInt(raw, 10);
+  if (!Number.isFinite(port) || port <= 0) {
+    throw new Error(`Invalid Wox server port in ${lockPath}: ${raw}`);
   }
-
-  return readdirSync(directory)
-    .filter((name) => name.toLowerCase().endsWith(".png"))
-    .map((name) => {
-      const filePath = join(directory, name);
-      const info = statSync(filePath);
-      return { path: filePath, mtimeMs: info.mtimeMs, size: info.size };
-    })
-    .filter((item) => item.size > 0)
-    .sort((a, b) => b.mtimeMs - a.mtimeMs);
-}
-
-async function pressEnter(): Promise<void> {
-  const powershell = process.env.SystemRoot
-    ? join(
-        process.env.SystemRoot,
-        "System32",
-        "WindowsPowerShell",
-        "v1.0",
-        "powershell.exe",
-      )
-    : "powershell.exe";
-
-  await execFileAsync(
-    powershell,
-    [
-      "-NoProfile",
-      "-ExecutionPolicy",
-      "Bypass",
-      "-Command",
-      "(New-Object -ComObject WScript.Shell).SendKeys('{ENTER}')",
-    ],
-    { windowsHide: true, timeout: 5000 },
-  );
+  return port;
 }
 
 export class WindowsScreenshotProvider implements ScreenshotProvider {
@@ -218,50 +190,41 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
 }
 
 export class WoxScreenshotProvider implements ScreenshotProvider {
-  private readonly api: PublicAPI;
-  private readonly screenshotDirectory: string;
-  private readonly timeoutMs: number;
-
-  constructor(options: ScriptPlatformOptions) {
-    if (!options.api) {
-      throw new Error("WoxScreenshotProvider requires a Wox API instance.");
-    }
-
-    this.api = options.api;
-    this.screenshotDirectory = join(homedir(), ".wox", "screenshots");
-    this.timeoutMs = 10 * 60 * 1000;
-  }
-
-  async captureRegion(ctx: Context): Promise<CapturedImage | null> {
-    const startedAt = Date.now();
-    const previousLatest = listScreenshotHistory(this.screenshotDirectory)[0];
-
-    await this.api.ChangeQuery(ctx, {
-      QueryType: "input",
-      QueryText: "screenshot new",
-    });
-    await this.api.ShowApp(ctx);
-    await delay(250);
-    await pressEnter();
-
-    const deadline = Date.now() + this.timeoutMs;
-    while (Date.now() < deadline) {
-      const newest = listScreenshotHistory(this.screenshotDirectory)[0];
-      if (
-        newest &&
-        newest.path !== previousLatest?.path &&
-        newest.mtimeMs >= startedAt - 2000
-      ) {
-        return { path: newest.path, source: "capture" };
-      }
-      await delay(500);
-    }
-
-    throw new I18nError(
-      "error_wox_screenshot_timeout",
-      {},
-      "Wox Screenshot did not produce an image before timeout.",
+  async captureRegion(): Promise<CapturedImage | null> {
+    // Use Wox's existing local screenshot trigger endpoint so OCR keeps its current query and
+    // never rewrites the input to "screenshot new" or synthesizes Enter into the launcher.
+    const port = getWoxServerPort();
+    const response = await fetch(
+      `http://127.0.0.1:${port}/test/trigger/screenshot`,
+      { method: "POST" },
     );
+    const payload =
+      (await response.json()) as WoxRestResponse<CaptureScreenshotResult>;
+    if (!payload.Success) {
+      throw new I18nError(
+        "error_wox_screenshot_trigger_unavailable",
+        { message: payload.Message || response.statusText },
+        payload.Message || response.statusText,
+      );
+    }
+
+    const result = payload.Data || {};
+    if (result.status === "cancelled") {
+      return null;
+    }
+    if (
+      result.status !== "completed" ||
+      !result.screenshotPath ||
+      !existsSync(result.screenshotPath)
+    ) {
+      throw new I18nError(
+        "error_windows_capture_failed",
+        { message: result.errorMessage || "Wox Screenshot failed." },
+        result.errorMessage || "Wox Screenshot failed.",
+      );
+    }
+
+    return { path: result.screenshotPath, source: "capture" };
   }
 }
 
@@ -327,7 +290,7 @@ export function createScreenshotProvider(
 ): ScreenshotProvider {
   if (process.platform === "win32") {
     if (captureMethod === "wox_screenshot") {
-      return new WoxScreenshotProvider({ pluginDirectory, api });
+      return new WoxScreenshotProvider();
     }
     return new WindowsScreenshotProvider({ pluginDirectory, api });
   }
