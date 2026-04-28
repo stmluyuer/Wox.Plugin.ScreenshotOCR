@@ -10,7 +10,7 @@
   "Website": "https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR",
   "Entry": "index.js",
   "Icon": "relative:images/app.svg",
-  "SupportedOS": ["windows", "linux", "darwin"],
+  "SupportedOS": ["windows"],
   "I18n": {
     "en_US": {
       "plugin_name": "Screenshot OCR",

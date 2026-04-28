@@ -1,16 +1,46 @@
+# Dependencies
 node_modules/
+.pnpm-store/
+
+# Build and coverage output
 dist/
 coverage/
 tools/WindowsOcr/bin/
 tools/WindowsOcr/obj/
 tools/WindowsOcr/publish/
+*.wox
+*.zip
+*.tgz
+
+# Tool caches
 .dotnet-home/
 .eslintcache
 *.tsbuildinfo
-*.wox
-.ocr-cache/
-WOX_SCREENSHOT_INTEGRATION.md
+.cache/
+
+# Logs
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+
+# Local editor/system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+WOX_SCREENSHOT_INTEGRATION.md
+PR_EXPERIENCE.local.md
+
+# Local runtime data and secrets
+.env
+.env.*
+!.env.example
+tmp/
+temp/
+.ocr-cache/
+
+# Wox local runtime data
+.wox/
+wox-user/

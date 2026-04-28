@@ -19,7 +19,7 @@ if (existsSync("dist")) {
 }
 
 run("eslint", ["src"])
-run("prettier", ["--write", "src/**/*", "**/*.json", "README.md"])
+run("prettier", ["--write", "src/**/*", "**/*.json", "README.md", "README.en.md"])
 run(
   "dotnet",
   [

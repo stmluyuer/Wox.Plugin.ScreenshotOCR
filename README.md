@@ -1,5 +1,7 @@
 # Screenshot OCR
 
+[中文](README.md) | [English](README.en.md)
+
 Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截图 OCR 插件。支持截图、剪贴板图片和图片文件的文字识别，设计上与 LuxTranslate 通过 `tr` 查询前缀协同工作，典型流程为：
 
 ```text
@@ -14,7 +16,7 @@ Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截
 - `ocr translate` 截图、识别并发送结果到 LuxTranslate。
 - 免配置 OCR：支持 Windows 本地 OCR、Snipping Tool OCR 和微信/QQ OCR。
 - 大模型 OCR：支持 OpenAI 兼容视觉模型。
-- 本地部署脚本，方便快速部署到 `C:\Users\权辉\.wox\wox-user\plugins` 测试。
+- 本地部署脚本，方便快速部署到 `%USERPROFILE%\.wox\wox-user\plugins` 测试。
 
 ## OCR 服务
 
@@ -35,23 +37,22 @@ Screenshot OCR 支持以下 OCR 服务：
 
 ## 安装
 
-安装依赖并构建：
+仓库已按 Wox Store 打包流程准备。发布前请在 GitHub Release 上传生成的 `.wox` 资产，然后再提交 Wox Store 条目。
 
 ```bash
+git clone https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR.git
+cd Wox.Plugin.ScreenshotOCR
 pnpm install
-pnpm build
+pnpm run build
+pnpm run package
 ```
 
-将构建好的插件部署到本地 Wox 插件目录：
+构建产物会生成在 `dist/`。`pnpm run package` 会生成 `wox.plugin.screenshotocr.wox`，用于 GitHub Releases 和 Wox Store 下载地址。
+
+本地测试时可以运行 `pnpm run deploy`，将 `dist/` 部署到当前用户的 Wox 插件目录。
 
 ```bash
 pnpm run deploy
-```
-
-部署目标路径为：
-
-```text
-C:\Users\权辉\.wox\wox-user\plugins\76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f@0.1.0
 ```
 
 部署后重新加载 Wox 插件即可。
@@ -91,15 +92,17 @@ C:\Users\权辉\.wox\wox-user\plugins\76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f@0.1.0
 ```bash
 pnpm install
 pnpm test
-pnpm build
+pnpm run build
 pnpm run deploy
+pnpm run package
 ```
 
 常用脚本：
 
 - `pnpm test`：运行 Jest 测试。
-- `pnpm build`：运行 lint、format、打包插件资源到 `dist/`。
+- `pnpm run build`：运行 lint、format、编译 Windows OCR 助手，并打包插件资源到 `dist/`。
 - `pnpm run deploy`：将 `dist/` 复制到 Wox 用户插件目录。
+- `pnpm run package`：生成 `wox.plugin.screenshotocr.wox`。
 - `pnpm run lint`：运行 ESLint。
 
 ## 工作流
@@ -112,7 +115,7 @@ pnpm run deploy
 
 ## 截图
 
-截图暂未补充。建议后续加入：
+提交 Wox Store 条目前建议补充截图：
 
 - Windows 截图覆盖层（背景变暗 + 高亮选中区域）。
 - Wox 中的 OCR 识别结果。
@@ -122,137 +125,6 @@ pnpm run deploy
 ## AI 协作声明
 
 本项目由作者在 OpenAI Codex 协助下大量生成、重构和测试。作者负责需求设计、代码审阅、功能验证和发布决策。
-
-## License
-
-MIT License. See [LICENSE](LICENSE).
-
----
-
-# Screenshot OCR
-
-Screenshot OCR is a [Wox](https://github.com/Wox-launcher/Wox) plugin for recognizing text from screenshots, clipboard images, or image files. It is designed to work with LuxTranslate through the `tr` query prefix, so the common flow is:
-
-```text
-screenshot -> OCR text -> LuxTranslate -> target language
-```
-
-## Features
-
-- `ocr capture` opens a Snipaste-like region capture window on Windows.
-- `ocr clipboard` reads an image from the clipboard and runs OCR.
-- `ocr file <path>` recognizes an existing local image.
-- `ocr translate` captures, recognizes, and sends the result to LuxTranslate.
-- No-configuration OCR providers for Windows local OCR, Snipping Tool OCR, and WeChat/QQ OCR.
-- Large model OCR through an OpenAI-compatible vision model.
-- Local deploy script for quick testing in `C:\Users\权辉\.wox\wox-user\plugins`.
-
-## Providers
-
-Screenshot OCR supports these providers:
-
-| Category             | Providers                                                   |
-| -------------------- | ----------------------------------------------------------- |
-| No-configuration OCR | Windows App SDK local OCR, Snipping Tool OCR, WeChat/QQ OCR |
-| Large model OCR      | OpenAI-compatible vision model                              |
-
-Notes:
-
-- No-configuration OCR providers do not require API keys.
-- Windows App SDK local OCR runs offline through Windows Runtime OCR and requires Windows 10 or Windows 11.
-- Snipping Tool OCR is declared for Windows 10/11. If a compatible native bridge command is configured, the plugin uses it; otherwise it falls back to the bundled Windows local OCR helper instead of failing.
-- WeChat/QQ OCR requires WeChat or QQ to be installed for the native path. If a compatible native bridge command is configured, the plugin uses it; otherwise it falls back to the bundled Windows local OCR helper instead of failing.
-- Large model OCR uses an OpenAI-compatible `chat/completions` endpoint with image input.
-
-## Installation
-
-Install dependencies and build:
-
-```bash
-pnpm install
-pnpm build
-```
-
-Deploy the built plugin to the local Wox plugin directory:
-
-```bash
-pnpm run deploy
-```
-
-The deployment target is:
-
-```text
-C:\Users\权辉\.wox\wox-user\plugins\76d3be7c-7f4d-4a9d-9f8a-1e8d4c6b5a2f@0.1.0
-```
-
-Reload Wox plugins after deployment.
-
-## Usage
-
-| Command                                         | Description                                     |
-| ----------------------------------------------- | ----------------------------------------------- |
-| `ocr`                                           | Show help                                       |
-| `ocr capture` / `ocr cap`                       | Capture a screen region and OCR it              |
-| `ocr clipboard` / `ocr cb`                      | OCR the image currently in the clipboard        |
-| `ocr file <path>` / `ocr f <path>`              | OCR an existing image file                      |
-| `ocr translate` / `ocr tr`                      | Capture a region, OCR it, and open LuxTranslate |
-| `ocr clipboard translate` / `ocr cb tr`         | OCR clipboard image and open LuxTranslate       |
-| `ocr file <path> translate` / `ocr f <path> tr` | OCR a file and open LuxTranslate                |
-
-Append `--run`, `--go`, or `!` to any executable command to run it immediately after typing, without pressing Enter. Examples: `ocr tr --run`, `ocr cb tr --run`. You can also enable `Auto execute exact commands` in settings to auto-run recognized complete commands.
-
-Recommended Wox query hotkey:
-
-- Query: `ocr translate`
-- Silent execution: enabled
-
-## Configuration
-
-- `OCR service type`: choose between no-configuration OCR and large model OCR.
-- `No-configuration OCR provider`: choose the local provider used when no-configuration OCR is selected.
-- `Auto translate after OCR`: sends OCR text to Translate even for non-translate commands.
-- `Auto execute exact commands`: runs complete OCR commands immediately without pressing Enter.
-- `Skip confirm after selection`: starts OCR after selecting a screenshot region without showing the confirmation toolbar.
-- `Translate query prefix`: defaults to `tr`.
-- `Request timeout`: timeout for large model OCR calls and local OCR bridge commands.
-- `Large model OCR settings`: configure API key, base URL, and model in the provider table.
-
-## Development
-
-```bash
-pnpm install
-pnpm test
-pnpm build
-pnpm run deploy
-```
-
-Useful scripts:
-
-- `pnpm test`: run Jest tests.
-- `pnpm build`: lint, format, bundle, and copy plugin assets into `dist/`.
-- `pnpm run deploy`: copy `dist/` into the Wox user plugin directory.
-- `pnpm run lint`: run ESLint.
-
-## Workflow
-
-1. Build and deploy the plugin.
-2. Run `ocr capture` and verify the Windows selection overlay.
-3. Copy an image to the clipboard and run `ocr clipboard`.
-4. Configure a large model OCR provider if needed.
-5. Run `ocr translate` or `ocr clipboard translate` to hand the OCR text to LuxTranslate.
-
-## Screenshots
-
-Screenshots are not included yet. Recommended additions:
-
-- Windows capture overlay with dimmed background and highlighted selection.
-- OCR result in Wox.
-- OCR provider settings table.
-- Translate handoff result.
-
-## AI Assistance Disclosure
-
-This project was substantially generated, refactored, and tested with assistance from OpenAI Codex. The author is responsible for requirements, code review, validation, and release decisions.
 
 ## License
 
