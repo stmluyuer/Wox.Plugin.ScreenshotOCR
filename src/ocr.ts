@@ -2,7 +2,7 @@ import { createHash, createHmac, randomUUID } from "node:crypto";
 import { execFile } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { release } from "node:os";
-import { basename, join } from "node:path";
+import { basename, extname, join } from "node:path";
 import { promisify } from "node:util";
 import {
   I18nError,
@@ -30,8 +30,73 @@ function imageBase64(path: string): string {
   return readFileSync(path).toString("base64");
 }
 
-function imageDataUrl(path: string): string {
-  return `data:image/png;base64,${imageBase64(path)}`;
+const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".jfif": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".bmp": "image/bmp",
+  ".tif": "image/tiff",
+  ".tiff": "image/tiff",
+  ".avif": "image/avif",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+};
+
+function imageMimeType(path: string, bytes: Buffer): string {
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes.subarray(1, 4).toString("ascii") === "PNG"
+  ) {
+    return "image/png";
+  }
+  if (
+    bytes.length >= 3 &&
+    bytes[0] === 0xff &&
+    bytes[1] === 0xd8 &&
+    bytes[2] === 0xff
+  ) {
+    return "image/jpeg";
+  }
+  if (
+    bytes.length >= 6 &&
+    ["GIF87a", "GIF89a"].includes(bytes.subarray(0, 6).toString("ascii"))
+  ) {
+    return "image/gif";
+  }
+  if (
+    bytes.length >= 12 &&
+    bytes.subarray(0, 4).toString("ascii") === "RIFF" &&
+    bytes.subarray(8, 12).toString("ascii") === "WEBP"
+  ) {
+    return "image/webp";
+  }
+  if (bytes.length >= 2 && bytes[0] === 0x42 && bytes[1] === 0x4d) {
+    return "image/bmp";
+  }
+  if (
+    bytes.length >= 4 &&
+    ((bytes[0] === 0x49 &&
+      bytes[1] === 0x49 &&
+      bytes[2] === 0x2a &&
+      bytes[3] === 0x00) ||
+      (bytes[0] === 0x4d &&
+        bytes[1] === 0x4d &&
+        bytes[2] === 0x00 &&
+        bytes[3] === 0x2a))
+  ) {
+    return "image/tiff";
+  }
+
+  return IMAGE_MIME_BY_EXTENSION[extname(path).toLowerCase()] || "image/png";
+}
+
+export function imageDataUrl(path: string): string {
+  const bytes = readFileSync(path);
+  return `data:${imageMimeType(path, bytes)};base64,${bytes.toString("base64")}`;
 }
 
 async function parseJsonResponse(

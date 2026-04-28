@@ -1,4 +1,7 @@
-import { createOcrProvider, providerDisplayName } from "../ocr";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createOcrProvider, imageDataUrl, providerDisplayName } from "../ocr";
 
 describe("OCR provider factory", () => {
   test("creates configured providers", () => {
@@ -19,5 +22,31 @@ describe("OCR provider factory", () => {
     expect(providerDisplayName("snipping_tool")).toBe("Snipping Tool OCR");
     expect(providerDisplayName("wechat_qq")).toBe("WeChat/QQ OCR");
     expect(providerDisplayName("offline")).toBe("Offline OCR");
+  });
+
+  test("preserves image media type in LLM data URLs", () => {
+    const dir = mkdtempSync(join(tmpdir(), "wox-ocr-test-"));
+    try {
+      const jpegPath = join(dir, "photo.unknown");
+      writeFileSync(jpegPath, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00]));
+      expect(imageDataUrl(jpegPath)).toMatch(/^data:image\/jpeg;base64,/);
+
+      const webpPath = join(dir, "image.webp");
+      writeFileSync(
+        webpPath,
+        Buffer.from("RIFF\x00\x00\x00\x00WEBPVP8 ", "binary"),
+      );
+      expect(imageDataUrl(webpPath)).toMatch(/^data:image\/webp;base64,/);
+
+      const fallbackPath = join(dir, "scan.jpg");
+      writeFileSync(fallbackPath, Buffer.from([0x01, 0x02, 0x03]));
+      expect(imageDataUrl(fallbackPath)).toMatch(/^data:image\/jpeg;base64,/);
+
+      const unknownPath = join(dir, "raw.bin");
+      writeFileSync(unknownPath, Buffer.from([0x01, 0x02, 0x03]));
+      expect(imageDataUrl(unknownPath)).toMatch(/^data:image\/png;base64,/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
