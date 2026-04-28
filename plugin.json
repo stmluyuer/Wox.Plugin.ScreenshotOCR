@@ -25,6 +25,7 @@
       "settings_default_provider": "Default OCR provider",
       "settings_group_free_ocr": "No-configuration OCR",
       "settings_group_llm_ocr": "Large model OCR",
+      "settings_group_advanced": "Advanced",
       "settings_ocr_service_type": "OCR service type",
       "settings_ocr_service_type_tip": "Use no-configuration local OCR, or route OCR requests through the configured vision model.",
       "settings_option_free_ocr": "No-configuration OCR",
@@ -132,6 +133,7 @@
       "settings_default_provider": "默认 OCR 服务",
       "settings_group_free_ocr": "免配置 OCR",
       "settings_group_llm_ocr": "大模型 OCR",
+      "settings_group_advanced": "高级设置",
       "settings_ocr_service_type": "OCR 服务类型",
       "settings_ocr_service_type_tip": "使用免 API Key 的本地 OCR，或把 OCR 请求交给已配置的视觉大模型。",
       "settings_option_free_ocr": "免配置 OCR",
@@ -246,48 +248,6 @@
     {
       "Type": "select",
       "Value": {
-        "Key": "ocr_service_type",
-        "Label": "i18n:settings_ocr_service_type",
-        "Tooltip": "i18n:settings_ocr_service_type_tip",
-        "DefaultValue": "free",
-        "Options": [
-          { "Label": "i18n:settings_option_free_ocr", "Value": "free" },
-          { "Label": "i18n:settings_option_llm_ocr", "Value": "llm" }
-        ],
-        "Style": { "Width": 360 }
-      }
-    },
-    {
-      "Type": "checkbox",
-      "Value": {
-        "Key": "auto_translate_after_ocr",
-        "Label": "i18n:settings_auto_translate",
-        "DefaultValue": "false",
-        "Style": { "Width": 360 }
-      }
-    },
-    {
-      "Type": "checkbox",
-      "Value": {
-        "Key": "auto_execute_commands",
-        "Label": "i18n:settings_auto_execute",
-        "Tooltip": "i18n:settings_auto_execute_tip",
-        "DefaultValue": "false",
-        "Style": { "Width": 360 }
-      }
-    },
-    {
-      "Type": "checkbox",
-      "Value": {
-        "Key": "skip_confirm_after_selection",
-        "Label": "i18n:settings_skip_confirm",
-        "DefaultValue": "false",
-        "Style": { "Width": 360 }
-      }
-    },
-    {
-      "Type": "select",
-      "Value": {
         "Key": "default_command",
         "Label": "i18n:settings_default_command",
         "Tooltip": "i18n:settings_default_command_tip",
@@ -310,6 +270,29 @@
       }
     },
     {
+      "Type": "select",
+      "Value": {
+        "Key": "ocr_service_type",
+        "Label": "i18n:settings_ocr_service_type",
+        "Tooltip": "i18n:settings_ocr_service_type_tip",
+        "DefaultValue": "free",
+        "Options": [
+          { "Label": "i18n:settings_option_free_ocr", "Value": "free" },
+          { "Label": "i18n:settings_option_llm_ocr", "Value": "llm" }
+        ],
+        "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "auto_translate_after_ocr",
+        "Label": "i18n:settings_auto_translate",
+        "DefaultValue": "false",
+        "Style": { "Width": 360 }
+      }
+    },
+    {
       "Type": "textbox",
       "Value": {
         "Key": "translate_query_prefix",
@@ -320,20 +303,22 @@
       }
     },
     {
-      "Type": "textbox",
+      "Type": "checkbox",
       "Value": {
-        "Key": "request_timeout_ms",
-        "Label": "i18n:settings_timeout",
-        "DefaultValue": "15000",
-        "Suffix": "ms",
-        "MaxLines": 1,
-        "Validators": [
-          {
-            "Type": "is_number",
-            "Value": { "IsInteger": true, "IsFloat": false }
-          }
-        ],
-        "Style": { "Width": 220 }
+        "Key": "skip_confirm_after_selection",
+        "Label": "i18n:settings_skip_confirm",
+        "DefaultValue": "false",
+        "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "auto_execute_commands",
+        "Label": "i18n:settings_auto_execute",
+        "Tooltip": "i18n:settings_auto_execute_tip",
+        "DefaultValue": "false",
+        "Style": { "Width": 360 }
       }
     },
     {
@@ -365,6 +350,12 @@
           { "Label": "i18n:provider_wechat_qq", "Value": "wechat_qq" }
         ],
         "Style": { "Width": 360 }
+      }
+    },
+    {
+      "Type": "newline",
+      "Value": {
+        "Style": {}
       }
     },
     {
@@ -421,6 +412,36 @@
           }
         ],
         "Style": { "Width": 780 }
+      }
+    },
+    {
+      "Type": "newline",
+      "Value": {
+        "Style": {}
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "i18n:settings_group_advanced",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "request_timeout_ms",
+        "Label": "i18n:settings_timeout",
+        "DefaultValue": "15000",
+        "Suffix": "ms",
+        "MaxLines": 1,
+        "Validators": [
+          {
+            "Type": "is_number",
+            "Value": { "IsInteger": true, "IsFloat": false }
+          }
+        ],
+        "Style": { "Width": 220 }
       }
     }
   ]
