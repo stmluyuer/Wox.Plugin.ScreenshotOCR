@@ -18,15 +18,9 @@
       "settings_group_basic": "Basic behavior",
       "settings_default_command": "Default behavior on Enter",
       "settings_default_command_tip": "Action when pressing Enter on ocr help. ocr tr: capture and translate. ocr capture: capture and OCR only. ocr clipboard: read clipboard and OCR.",
-      "settings_screenshot_capture_method": "Screenshot method",
-      "settings_screenshot_capture_method_tip": "Choose the built-in Screenshot OCR selector, or trigger a Wox Query Hotkey that runs screenshot new silently.",
-      "settings_wox_screenshot_hotkey": "Wox screenshot hotkey",
-      "settings_wox_screenshot_hotkey_tip": "Set this to a Wox Query Hotkey configured for screenshot new with silent execution enabled. Supports Ctrl/Shift/Alt combinations such as Ctrl+Shift+9.",
       "settings_option_translate": "ocr tr — Capture, OCR, and translate",
       "settings_option_capture": "ocr capture — Capture and OCR only",
       "settings_option_clipboard": "ocr clipboard — Read clipboard and OCR",
-      "settings_option_capture_builtin": "Built-in Screenshot OCR selector",
-      "settings_option_capture_wox": "Wox Screenshot",
       "settings_group_providers": "OCR providers",
       "settings_default_provider": "Default OCR provider",
       "settings_group_free_ocr": "No-configuration OCR",
@@ -100,9 +94,6 @@
       "error_capture_platform_unsupported": "Screenshot capture is implemented for Windows first. macOS/Linux adapters are reserved.",
       "error_clipboard_platform_unsupported": "Clipboard image reading is implemented for Windows first. macOS/Linux adapters are reserved.",
       "error_windows_capture_failed": "Windows screenshot capture failed. {message}",
-      "error_wox_screenshot_hotkey_required": "Wox screenshot hotkey is required.",
-      "error_wox_screenshot_hotkey_unsupported": "Unsupported Wox screenshot hotkey: {hotkey}",
-      "error_wox_screenshot_timeout": "Wox Screenshot did not produce an image before timeout.",
       "error_clipboard_read_failed": "Failed to read image from clipboard. {message}",
       "error_provider_request_failed": "{provider} request failed with {status}: {body}",
       "error_provider_invalid_json": "{provider} returned invalid JSON: {message}",
@@ -135,15 +126,9 @@
       "settings_group_basic": "基础行为",
       "settings_default_command": "回车默认行为",
       "settings_default_command_tip": "在 ocr 帮助界面按回车时执行的操作。ocr tr：截图并翻译。ocr capture：仅截图并 OCR。ocr clipboard：读取剪贴板并 OCR。",
-      "settings_screenshot_capture_method": "截图方式",
-      "settings_screenshot_capture_method_tip": "选择 Screenshot OCR 内置截图，或触发一个静默执行 screenshot new 的 Wox 快捷查询。",
-      "settings_wox_screenshot_hotkey": "Wox 截图热键",
-      "settings_wox_screenshot_hotkey_tip": "填写一个 Wox 快捷查询热键，该快捷查询需要配置为 screenshot new 并开启静默执行。支持 Ctrl/Shift/Alt 组合，例如 Ctrl+Shift+9。",
       "settings_option_translate": "ocr tr — 截图、OCR 并翻译",
       "settings_option_capture": "ocr capture — 仅截图并 OCR",
       "settings_option_clipboard": "ocr clipboard — 读取剪贴板并 OCR",
-      "settings_option_capture_builtin": "Screenshot OCR 内置截图",
-      "settings_option_capture_wox": "Wox 截图",
       "settings_group_providers": "OCR 服务",
       "settings_default_provider": "默认 OCR 服务",
       "settings_group_free_ocr": "免配置 OCR",
@@ -217,9 +202,6 @@
       "error_capture_platform_unsupported": "截图功能暂仅支持 Windows。macOS/Linux 适配预留中。",
       "error_clipboard_platform_unsupported": "剪贴板图片读取暂仅支持 Windows。macOS/Linux 适配预留中。",
       "error_windows_capture_failed": "Windows 截图失败。{message}",
-      "error_wox_screenshot_hotkey_required": "需要配置 Wox 截图热键。",
-      "error_wox_screenshot_hotkey_unsupported": "不支持的 Wox 截图热键：{hotkey}",
-      "error_wox_screenshot_timeout": "Wox 截图超时，未生成图片。",
       "error_clipboard_read_failed": "读取剪贴板图片失败。{message}",
       "error_provider_request_failed": "{provider} 请求失败，状态码 {status}：{body}",
       "error_provider_invalid_json": "{provider} 返回了无效的 JSON：{message}",
@@ -285,37 +267,6 @@
           }
         ],
         "Style": { "Width": 360 }
-      }
-    },
-    {
-      "Type": "select",
-      "Value": {
-        "Key": "screenshot_capture_method",
-        "Label": "i18n:settings_screenshot_capture_method",
-        "Tooltip": "i18n:settings_screenshot_capture_method_tip",
-        "DefaultValue": "builtin",
-        "Options": [
-          {
-            "Label": "i18n:settings_option_capture_builtin",
-            "Value": "builtin"
-          },
-          {
-            "Label": "i18n:settings_option_capture_wox",
-            "Value": "wox_screenshot"
-          }
-        ],
-        "Style": { "Width": 360 }
-      }
-    },
-    {
-      "Type": "textbox",
-      "Value": {
-        "Key": "wox_screenshot_hotkey",
-        "Label": "i18n:settings_wox_screenshot_hotkey",
-        "Tooltip": "i18n:settings_wox_screenshot_hotkey_tip",
-        "DefaultValue": "",
-        "MaxLines": 1,
-        "Style": { "Width": 220 }
       }
     },
     {

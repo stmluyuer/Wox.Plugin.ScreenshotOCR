@@ -1,5 +1,3 @@
-import type { Context } from "@wox-launcher/wox-plugin";
-
 export class I18nError extends Error {
   constructor(
     public readonly key: string,
@@ -12,8 +10,6 @@ export class I18nError extends Error {
 }
 
 export type ImageSource = "capture" | "clipboard" | "file";
-
-export type ScreenshotCaptureMethod = "builtin" | "wox_screenshot";
 
 export interface CapturedImage {
   path: string;
@@ -47,8 +43,6 @@ export interface OcrProviderSettingsRow {
 export interface PluginSettings {
   defaultOcrProvider: OcrProviderName;
   defaultCommand: "translate" | "capture" | "clipboard";
-  screenshotCaptureMethod: ScreenshotCaptureMethod;
-  woxScreenshotHotkey: string;
   providerRows: OcrProviderSettingsRow[];
   requestTimeoutMs: number;
   autoTranslateAfterOcr: boolean;
@@ -76,10 +70,7 @@ export interface OcrProvider {
 }
 
 export interface ScreenshotProvider {
-  captureRegion(
-    ctx: Context,
-    skipConfirm?: boolean,
-  ): Promise<CapturedImage | null>;
+  captureRegion(skipConfirm?: boolean): Promise<CapturedImage | null>;
 }
 
 export interface ClipboardImageProvider {

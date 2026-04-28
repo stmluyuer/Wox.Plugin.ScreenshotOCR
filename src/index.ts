@@ -24,10 +24,12 @@ import {
   I18nError,
   OcrProviderName,
   PluginSettings,
+  ScreenshotProvider,
 } from "./types";
 
 let api: PublicAPI;
 let pluginDirectory = "";
+let screenshotProvider: ScreenshotProvider;
 let clipboardImageProvider: ClipboardImageProvider;
 const runningAutoRuns = new Map<string, string>();
 
@@ -201,7 +203,6 @@ async function buildAutoRunResult(
 async function resolveImage(
   ctx: Context,
   source: "capture" | "clipboard" | "file",
-  settings: PluginSettings,
   skipConfirm: boolean,
   filePath?: string,
 ): Promise<CapturedImage | null> {
@@ -217,12 +218,8 @@ async function resolveImage(
   }
 
   if (source === "capture") {
-    return createScreenshotProvider(
-      pluginDirectory,
-      api,
-      settings.screenshotCaptureMethod,
-      settings.woxScreenshotHotkey,
-    ).captureRegion(ctx, skipConfirm);
+    await api.HideApp(ctx);
+    return screenshotProvider.captureRegion(skipConfirm);
   }
 
   return clipboardImageProvider.readImage();
@@ -304,7 +301,6 @@ async function runWorkflow(
     const image = await resolveImage(
       ctx,
       source,
-      settings,
       settings.skipConfirmAfterSelection,
       filePath,
     );
@@ -497,6 +493,7 @@ export const plugin: Plugin = {
   init: async (ctx: Context, initParams: PluginInitParams) => {
     api = initParams.API;
     pluginDirectory = initParams.PluginDirectory;
+    screenshotProvider = createScreenshotProvider(pluginDirectory);
     clipboardImageProvider = createClipboardImageProvider(pluginDirectory);
     await api.Log(
       ctx,
