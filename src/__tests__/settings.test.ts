@@ -2,6 +2,7 @@ import {
   loadSettings,
   normalizeFreeOcrProvider,
   normalizeOcrProvider,
+  normalizeScreenshotCaptureMethod,
   parseProviderRows,
 } from "../settings";
 
@@ -13,6 +14,10 @@ describe("settings helpers", () => {
     expect(normalizeOcrProvider("bad")).toBe("windows_app_sdk");
     expect(normalizeFreeOcrProvider("snipping_tool")).toBe("snipping_tool");
     expect(normalizeFreeOcrProvider("llm")).toBe("windows_app_sdk");
+    expect(normalizeScreenshotCaptureMethod("wox_screenshot")).toBe(
+      "wox_screenshot",
+    );
+    expect(normalizeScreenshotCaptureMethod("bad")).toBe("builtin");
   });
 
   test("parses provider table rows", () => {
@@ -43,6 +48,7 @@ describe("settings helpers", () => {
         const values: Record<string, string> = {
           ocr_service_type: "free",
           default_free_ocr_provider: "wechat_qq",
+          screenshot_capture_method: "wox_screenshot",
         };
         return values[key] || "";
       }),
@@ -51,6 +57,7 @@ describe("settings helpers", () => {
     const settings = await loadSettings(api as never, {} as never);
 
     expect(settings.defaultOcrProvider).toBe("wechat_qq");
+    expect(settings.screenshotCaptureMethod).toBe("wox_screenshot");
   });
 
   test("loads large model OCR service selection", async () => {

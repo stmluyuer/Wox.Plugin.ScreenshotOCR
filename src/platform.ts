@@ -1,12 +1,14 @@
 import { execFile } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
+import type { Context, PublicAPI } from "@wox-launcher/wox-plugin";
 import {
   CapturedImage,
   ClipboardImageProvider,
   I18nError,
+  ScreenshotCaptureMethod,
   ScreenshotProvider,
 } from "./types";
 
@@ -30,7 +32,14 @@ export class PlatformUnsupportedError extends Error {
 
 export interface ScriptPlatformOptions {
   pluginDirectory: string;
+  api?: PublicAPI;
   cacheDirectory?: string;
+}
+
+interface ScreenshotHistoryItem {
+  path: string;
+  mtimeMs: number;
+  size: number;
 }
 
 function cachePath(cacheDirectory: string, prefix: string): string {
@@ -122,17 +131,66 @@ function parseScriptJson(stdout: string): {
   }
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function listScreenshotHistory(directory: string): ScreenshotHistoryItem[] {
+  if (!existsSync(directory)) {
+    return [];
+  }
+
+  return readdirSync(directory)
+    .filter((name) => name.toLowerCase().endsWith(".png"))
+    .map((name) => {
+      const filePath = join(directory, name);
+      const info = statSync(filePath);
+      return { path: filePath, mtimeMs: info.mtimeMs, size: info.size };
+    })
+    .filter((item) => item.size > 0)
+    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+}
+
+async function pressEnter(): Promise<void> {
+  const powershell = process.env.SystemRoot
+    ? join(
+        process.env.SystemRoot,
+        "System32",
+        "WindowsPowerShell",
+        "v1.0",
+        "powershell.exe",
+      )
+    : "powershell.exe";
+
+  await execFileAsync(
+    powershell,
+    [
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      "(New-Object -ComObject WScript.Shell).SendKeys('{ENTER}')",
+    ],
+    { windowsHide: true, timeout: 5000 },
+  );
+}
+
 export class WindowsScreenshotProvider implements ScreenshotProvider {
   private readonly pluginDirectory: string;
   private readonly cacheDirectory: string;
+  private readonly api?: PublicAPI;
 
   constructor(options: ScriptPlatformOptions) {
     this.pluginDirectory = options.pluginDirectory;
+    this.api = options.api;
     this.cacheDirectory =
       options.cacheDirectory || join(tmpdir(), "wox-screenshot-ocr");
   }
 
-  async captureRegion(skipConfirm = false): Promise<CapturedImage | null> {
+  async captureRegion(
+    ctx: Context,
+    skipConfirm = false,
+  ): Promise<CapturedImage | null> {
     const outputPath = cachePath(this.cacheDirectory, "capture");
     const scriptPath = join(
       this.pluginDirectory,
@@ -143,6 +201,7 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
     if (skipConfirm) {
       args.push("-SkipConfirm");
     }
+    await this.api?.HideApp(ctx);
     const result = await runPowerShellJson(scriptPath, outputPath, args);
     if (result.status === "cancelled") {
       return null;
@@ -155,6 +214,54 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
       );
     }
     return { path: result.path, source: "capture" };
+  }
+}
+
+export class WoxScreenshotProvider implements ScreenshotProvider {
+  private readonly api: PublicAPI;
+  private readonly screenshotDirectory: string;
+  private readonly timeoutMs: number;
+
+  constructor(options: ScriptPlatformOptions) {
+    if (!options.api) {
+      throw new Error("WoxScreenshotProvider requires a Wox API instance.");
+    }
+
+    this.api = options.api;
+    this.screenshotDirectory = join(homedir(), ".wox", "screenshots");
+    this.timeoutMs = 10 * 60 * 1000;
+  }
+
+  async captureRegion(ctx: Context): Promise<CapturedImage | null> {
+    const startedAt = Date.now();
+    const previousLatest = listScreenshotHistory(this.screenshotDirectory)[0];
+
+    await this.api.ChangeQuery(ctx, {
+      QueryType: "input",
+      QueryText: "screenshot new",
+    });
+    await this.api.ShowApp(ctx);
+    await delay(250);
+    await pressEnter();
+
+    const deadline = Date.now() + this.timeoutMs;
+    while (Date.now() < deadline) {
+      const newest = listScreenshotHistory(this.screenshotDirectory)[0];
+      if (
+        newest &&
+        newest.path !== previousLatest?.path &&
+        newest.mtimeMs >= startedAt - 2000
+      ) {
+        return { path: newest.path, source: "capture" };
+      }
+      await delay(500);
+    }
+
+    throw new I18nError(
+      "error_wox_screenshot_timeout",
+      {},
+      "Wox Screenshot did not produce an image before timeout.",
+    );
   }
 }
 
@@ -215,9 +322,14 @@ export class UnsupportedClipboardImageProvider
 
 export function createScreenshotProvider(
   pluginDirectory: string,
+  api: PublicAPI,
+  captureMethod: ScreenshotCaptureMethod = "builtin",
 ): ScreenshotProvider {
   if (process.platform === "win32") {
-    return new WindowsScreenshotProvider({ pluginDirectory });
+    if (captureMethod === "wox_screenshot") {
+      return new WoxScreenshotProvider({ pluginDirectory, api });
+    }
+    return new WindowsScreenshotProvider({ pluginDirectory, api });
   }
   return new UnsupportedScreenshotProvider();
 }
