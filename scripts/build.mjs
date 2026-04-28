@@ -17,6 +17,9 @@ function run(command, args, options = {}) {
 if (existsSync("dist")) {
   rmSync("dist", { recursive: true, force: true })
 }
+if (existsSync("tools/WindowsOcr/publish")) {
+  rmSync("tools/WindowsOcr/publish", { recursive: true, force: true })
+}
 
 run("eslint", ["src"])
 run("prettier", ["--write", "src/**/*", "**/*.json", "README.md", "README.en.md"])
@@ -27,6 +30,10 @@ run(
     "tools/WindowsOcr/WindowsOcr.csproj",
     "-c",
     "Release",
+    "-r",
+    "win-x64",
+    "--self-contained",
+    "true",
     "-o",
     "tools/WindowsOcr/publish"
   ],
