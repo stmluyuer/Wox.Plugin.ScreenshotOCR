@@ -10,6 +10,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   defaultOcrProvider: "windows_app_sdk",
   defaultCommand: "translate",
   screenshotCaptureMethod: "builtin",
+  woxScreenshotHotkey: "",
   providerRows: [],
   requestTimeoutMs: 15000,
   autoTranslateAfterOcr: false,
@@ -154,6 +155,12 @@ export async function loadSettings(
         "screenshot_capture_method",
         DEFAULT_SETTINGS.screenshotCaptureMethod,
       ),
+    ),
+    woxScreenshotHotkey: await getSetting(
+      api,
+      ctx,
+      "wox_screenshot_hotkey",
+      DEFAULT_SETTINGS.woxScreenshotHotkey,
     ),
     providerRows: parseProviderRows(
       await getSetting(api, ctx, "ocr_provider_table", "[]"),

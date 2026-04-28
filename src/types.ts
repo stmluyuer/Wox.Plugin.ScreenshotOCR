@@ -48,6 +48,7 @@ export interface PluginSettings {
   defaultOcrProvider: OcrProviderName;
   defaultCommand: "translate" | "capture" | "clipboard";
   screenshotCaptureMethod: ScreenshotCaptureMethod;
+  woxScreenshotHotkey: string;
   providerRows: OcrProviderSettingsRow[];
   requestTimeoutMs: number;
   autoTranslateAfterOcr: boolean;

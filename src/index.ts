@@ -221,6 +221,7 @@ async function resolveImage(
       pluginDirectory,
       api,
       settings.screenshotCaptureMethod,
+      settings.woxScreenshotHotkey,
     ).captureRegion(ctx, skipConfirm);
   }
 

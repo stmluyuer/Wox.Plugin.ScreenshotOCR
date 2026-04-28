@@ -49,6 +49,7 @@ describe("settings helpers", () => {
           ocr_service_type: "free",
           default_free_ocr_provider: "wechat_qq",
           screenshot_capture_method: "wox_screenshot",
+          wox_screenshot_hotkey: "ctrl+shift+9",
         };
         return values[key] || "";
       }),
@@ -58,6 +59,7 @@ describe("settings helpers", () => {
 
     expect(settings.defaultOcrProvider).toBe("wechat_qq");
     expect(settings.screenshotCaptureMethod).toBe("wox_screenshot");
+    expect(settings.woxScreenshotHotkey).toBe("ctrl+shift+9");
   });
 
   test("loads large model OCR service selection", async () => {
