@@ -115,12 +115,17 @@ pnpm run package
 
 ## 截图
 
-提交 Wox Store 条目前建议补充截图：
+- **指令帮助页面**：`ocr` 命令展示的完整帮助信息。
 
-- Windows 截图覆盖层（背景变暗 + 高亮选中区域）。
-- Wox 中的 OCR 识别结果。
-- OCR 服务配置表格。
-- 翻译联动结果。
+  ![命令帮助](screenshots/command-help.jpg)
+
+- **插件配置页面**：Wox 插件设置面板。
+
+  ![插件配置](screenshots/settings.jpg)
+
+- **大模型 OCR 配置**：OpenAI 兼容视觉模型的服务配置。
+
+  ![模型配置](screenshots/model-config.jpg)
 
 ## AI 协作声明
 

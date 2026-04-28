@@ -109,12 +109,17 @@ Useful commands:
 
 ## Screenshots
 
-Screenshots should be added before submitting the Wox Store entry. Recommended coverage:
+- **Command help page**: the full help text shown by the `ocr` command.
 
-- Region capture overlay.
-- OCR result in Wox.
-- OCR provider settings.
-- LuxTranslate handoff result.
+  ![Command help](screenshots/command-help.jpg)
+
+- **Plugin settings page**: the Wox plugin settings panel.
+
+  ![Plugin settings](screenshots/settings.jpg)
+
+- **Vision LLM OCR settings**: service configuration for OpenAI-compatible vision models.
+
+  ![Model config](screenshots/model-config.jpg)
 
 ## AI Collaboration Notice
 
