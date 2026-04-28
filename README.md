@@ -2,6 +2,8 @@
 
 [中文](README.md) | [English](README.en.md)
 
+> **测试版声明**：当前插件仍属于测试版本，尚未经过充分测试。如有严重 bug，我先道歉；也欢迎在 GitHub Issues 反馈给我，我会尽快修复。
+
 Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截图 OCR 插件。支持截图、剪贴板图片和图片文件的文字识别，设计上与 LuxTranslate 通过 `tr` 查询前缀协同工作，典型流程为：
 
 ```text

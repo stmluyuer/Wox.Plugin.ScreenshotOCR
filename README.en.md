@@ -2,6 +2,8 @@
 
 [English](README.en.md) | [中文](README.md)
 
+> **Beta Notice**: This plugin is still a test version and has not been fully tested. If you run into a serious bug, I apologize in advance. Please report it through GitHub Issues and I will fix it as soon as I can.
+
 Screenshot OCR is a [Wox](https://github.com/Wox-launcher/Wox) plugin for recognizing text from screenshots, clipboard images, or image files. It is designed to work with LuxTranslate through the `tr` query prefix, so the common flow is:
 
 ```text
