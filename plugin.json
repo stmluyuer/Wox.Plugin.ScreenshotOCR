@@ -123,7 +123,8 @@
       "settings_screenshot_capture_method": "Screenshot method",
       "settings_screenshot_capture_method_tip": "Choose Wox built-in Screenshot API for the capture UI, or use the legacy Screenshot OCR built-in selector as a fallback.",
       "settings_option_capture_wox": "Wox Screenshot",
-      "settings_option_capture_builtin": "Built-in Screenshot OCR selector"
+      "settings_option_capture_builtin": "Built-in Screenshot OCR selector",
+      "settings_skip_confirm_tip": "Only the built-in Screenshot OCR selector can skip the confirm page. When this is enabled, captures use the built-in selector even if Screenshot method is set to Wox Screenshot."
     },
     "zh_CN": {
       "plugin_name": "截图 OCR",
@@ -236,7 +237,8 @@
       "settings_screenshot_capture_method": "截图方式",
       "settings_screenshot_capture_method_tip": "选择 Wox 内置截图 API 作为截图界面，或使用 Screenshot OCR 旧版内置框选作为兼容方案。",
       "settings_option_capture_wox": "Wox 截图",
-      "settings_option_capture_builtin": "Screenshot OCR 内置截图"
+      "settings_option_capture_builtin": "Screenshot OCR 内置截图",
+      "settings_skip_confirm_tip": "只有 Screenshot OCR 内置截图支持跳过确认页。开启后，即使截图方式选择 Wox 截图，本次截图也会自动使用内置截图。"
     }
   },
   "Features": [
@@ -356,7 +358,8 @@
         "DefaultValue": "false",
         "Style": {
           "Width": 360
-        }
+        },
+        "Tooltip": "i18n:settings_skip_confirm_tip"
       }
     },
     {

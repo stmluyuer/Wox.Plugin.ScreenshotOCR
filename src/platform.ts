@@ -186,14 +186,17 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
     captureMethod: ScreenshotCaptureMethod,
     skipConfirm = false,
   ): Promise<CapturedImage | null> {
-    if (captureMethod === "builtin") {
+    if (captureMethod === "builtin" || skipConfirm) {
       // The script-based overlay needs Wox hidden before it starts capturing.
+      if (captureMethod === "wox" && skipConfirm) {
+        await this.api.Log(
+          ctx,
+          "Info",
+          "Wox Screenshot API does not expose skip-confirm yet; using the built-in selector for this capture.",
+        );
+      }
       await this.api.HideApp(ctx);
-      return this.fallbackProvider.captureRegion(
-        ctx,
-        captureMethod,
-        skipConfirm,
-      );
+      return this.fallbackProvider.captureRegion(ctx, "builtin", skipConfirm);
     }
 
     try {
