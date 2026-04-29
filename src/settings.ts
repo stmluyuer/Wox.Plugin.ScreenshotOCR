@@ -68,6 +68,7 @@ export function parseProviderRows(value: string): OcrProviderSettingsRow[] {
   }
 
   try {
+    // Wox table settings are stored as JSON arrays of row objects.
     const parsed = JSON.parse(value) as unknown;
     if (!Array.isArray(parsed)) {
       return [];
@@ -129,6 +130,8 @@ export async function loadSettings(
     "default_ocr_provider",
     DEFAULT_SETTINGS.defaultOcrProvider,
   );
+  // Keep compatibility with older settings while the UI now separates free and
+  // LLM OCR choices behind a service-type selector.
   const serviceTypeFallback = legacyProvider === "llm" ? "llm" : "free";
   const serviceType = await getSetting(
     api,

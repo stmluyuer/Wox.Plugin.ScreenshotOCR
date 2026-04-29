@@ -36,6 +36,8 @@ function extractAutoRunFlag(search: string): {
   search: string;
   autoRun: boolean;
 } {
+  // Auto-run is only recognized as a trailing flag to avoid treating image
+  // paths that contain "!" or "--run" as commands.
   const match = search.match(/(?:^|\s)(--run|--go|!)\s*$/i);
   if (!match) {
     return { search, autoRun: false };

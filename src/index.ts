@@ -55,6 +55,7 @@ async function resolveI18nMessage(
 ): Promise<string> {
   let msg = await t(ctx, key);
   if (msg === key) return fallback;
+  // Keep interpolation local so provider and platform errors can share i18n keys.
   for (const [k, v] of Object.entries(params)) {
     msg = msg.replace(`{${k}}`, v);
   }
@@ -207,6 +208,7 @@ async function resolveImage(
   skipConfirm: boolean,
   filePath?: string,
 ): Promise<CapturedImage | null> {
+  // File input bypasses capture providers so users can OCR a known image path.
   if (source === "file") {
     if (!filePath || !existsSync(filePath)) {
       throw new I18nError(
@@ -265,6 +267,7 @@ async function recognizeImage(
     result.providerName || providerDisplayName(provider, providerRow);
   let pKey = providerI18nKey(provider);
   const pParams: Record<string, string> = {};
+  // LLM providers include the model in the display name; expose it for i18n.
   if (provider === "llm") {
     const match = pName.match(/\((.+)\)$/);
     if (match) {
@@ -292,6 +295,8 @@ async function runWorkflow(
   const provider = settings.defaultOcrProvider;
 
   try {
+    // Long-running work updates the existing Wox result instead of returning
+    // a new result list, which keeps keyboard focus and action state stable.
     await updateStatus(
       ctx,
       actionContext.ResultId,
@@ -310,6 +315,7 @@ async function runWorkflow(
       filePath,
     );
     if (!image) {
+      // A null image means a normal user cancellation or empty clipboard.
       const title =
         source === "clipboard"
           ? await t(ctx, "result_no_clipboard_image")
@@ -333,6 +339,7 @@ async function runWorkflow(
       ocr.providerName,
     );
     if (ocr.text === "") {
+      // Empty OCR is a valid provider response, not an exception.
       await updateStatus(
         ctx,
         actionContext.ResultId,
@@ -344,6 +351,7 @@ async function runWorkflow(
     }
 
     if (shouldTranslate) {
+      // Hand off recognized text to the configured translation plugin query.
       await api.ChangeQuery(ctx, {
         QueryType: "input",
         QueryText: buildTranslateQuery(settings.translateQueryPrefix, ocr.text),
@@ -473,6 +481,7 @@ function queueAutoRun(
   }
 
   runningAutoRuns.set(key, resultId);
+  // Defer execution until Wox has rendered the placeholder result we update.
   setTimeout(() => {
     void runWorkflow(
       ctx,
@@ -485,6 +494,7 @@ function queueAutoRun(
       translate,
       filePath,
     ).finally(() => {
+      // Keep the key briefly to absorb duplicate query refreshes from Wox.
       setTimeout(() => {
         if (runningAutoRuns.get(key) === resultId) {
           runningAutoRuns.delete(key);

@@ -46,6 +46,8 @@ const IMAGE_MIME_BY_EXTENSION: Record<string, string> = {
 };
 
 function imageMimeType(path: string, bytes: Buffer): string {
+  // Prefer byte signatures over file extensions because clipboard captures may
+  // use temporary names that do not reflect the real image type.
   if (
     bytes.length >= 8 &&
     bytes[0] === 0x89 &&
@@ -138,6 +140,7 @@ export async function fetchWithTimeout(
 }
 
 function compactLines(lines: Array<string | undefined | null>): string {
+  // OCR providers often return sparse line arrays; normalize them once here.
   return lines
     .map((line) => (line || "").trim())
     .filter(Boolean)
@@ -182,6 +185,7 @@ function parseOcrStdout(stdout: string, providerName: string): string {
       message?: string;
     };
   } catch {
+    // Custom local commands may return plain text instead of structured JSON.
     return text;
   }
 
@@ -242,6 +246,7 @@ async function runExecutable(
       message?: string;
     };
     if (maybe.stdout?.trim()) {
+      // Some OCR helpers exit non-zero while still writing usable recognition.
       return { stdout: maybe.stdout, stderr: maybe.stderr || "" };
     }
     throw new I18nError(
@@ -261,6 +266,8 @@ async function runBundledWindowsOcr(
   timeoutMs: number,
   providerName: string,
 ): Promise<OcrResult> {
+  // The packaged helper gives Windows-native OCR without requiring users to
+  // configure a separate command-line tool.
   const exePath = join(
     requireConfig(
       pluginDirectory,
@@ -312,6 +319,7 @@ export class SnippingToolOcrProvider implements OcrProvider {
     );
     const command = request.providerRow?.command?.trim();
     if (command) {
+      // Advanced users can override the bundled helper with their own adapter.
       return runLocalCommandOcr(
         command,
         request.imagePath,
@@ -387,6 +395,7 @@ export class BaiduOcrProvider implements OcrProvider {
       "Baidu OCR did not return an access token.",
     );
 
+    // Baidu requires a short-lived OAuth token before the OCR request.
     const body = new URLSearchParams();
     body.set("image", imageBase64(request.imagePath));
     const response = await fetchWithTimeout(
@@ -439,6 +448,7 @@ export class YoudaoOcrProvider implements OcrProvider {
     const img = imageBase64(request.imagePath);
     const salt = randomUUID();
     const curtime = Math.floor(Date.now() / 1000).toString();
+    // Youdao v3 signing hashes a shortened image payload for large inputs.
     const sign = createHash("sha256")
       .update(`${appKey}${truncateForYoudao(img)}${salt}${curtime}${secretKey}`)
       .digest("hex");
@@ -526,6 +536,7 @@ export class VolcanoOcrProvider implements OcrProvider {
     const query = "Action=OCRNormal&Version=2020-08-26";
     const signedHeaders = "content-type;host;x-content-sha256;x-date";
     const payloadHash = sha256Hex(payload);
+    // Volcengine uses an AWS-style canonical request and derived signing key.
     const canonicalRequest = [
       "POST",
       "/",
@@ -646,6 +657,7 @@ export class BingOcrProvider implements OcrProvider {
             ]),
           ) || [],
       ) || [];
+    // Azure groups words into regions and lines; return one readable line each.
     return { text: compactLines(lines), providerName: "Bing/Azure Vision" };
   }
 }
@@ -730,6 +742,7 @@ export class LlmVisionOcrProvider implements OcrProvider {
         },
         body: JSON.stringify({
           model,
+          // Use the OpenAI-compatible vision message shape for custom providers.
           messages: [
             {
               role: "system",

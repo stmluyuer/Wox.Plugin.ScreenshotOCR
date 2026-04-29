@@ -41,6 +41,7 @@ export interface WoxScreenshotOptions extends ScriptPlatformOptions {
 
 function cachePath(cacheDirectory: string, prefix: string): string {
   mkdirSync(cacheDirectory, { recursive: true });
+  // Include a random suffix so repeated captures never overwrite each other.
   return join(
     cacheDirectory,
     `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}.png`,
@@ -58,6 +59,8 @@ async function runPowerShellJson(
   stdout: string;
   code: number | null;
 }> {
+  // Use Windows PowerShell in STA mode because clipboard and screen capture
+  // APIs require a single-threaded apartment.
   const powershell = process.env.SystemRoot
     ? join(
         process.env.SystemRoot,
@@ -109,6 +112,7 @@ function parseScriptJson(stdout: string): {
   path?: string;
   message?: string;
 } {
+  // Scripts may log progress before printing the final JSON payload.
   const lines = stdout
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -183,6 +187,7 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
     skipConfirm = false,
   ): Promise<CapturedImage | null> {
     if (captureMethod === "builtin") {
+      // The script-based overlay needs Wox hidden before it starts capturing.
       await this.api.HideApp(ctx);
       return this.fallbackProvider.captureRegion(
         ctx,
@@ -193,6 +198,7 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
 
     try {
       if (typeof this.api.Screenshot !== "function") {
+        // Older Wox versions do not expose the native screenshot API yet.
         await this.api.HideApp(ctx);
         return this.fallbackProvider.captureRegion(ctx, "builtin", skipConfirm);
       }
@@ -220,6 +226,7 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
       if (error instanceof I18nError) {
         throw error;
       }
+      // Unexpected native API failures fall back to the bundled script path.
       await this.api.HideApp(ctx);
       return this.fallbackProvider.captureRegion(ctx, "builtin", skipConfirm);
     }
