@@ -12,6 +12,7 @@ export class I18nError extends Error {
 }
 
 export type ImageSource = "capture" | "clipboard" | "file";
+export type ScreenshotCaptureMethod = "wox" | "builtin";
 
 export interface CapturedImage {
   path: string;
@@ -45,6 +46,7 @@ export interface OcrProviderSettingsRow {
 export interface PluginSettings {
   defaultOcrProvider: OcrProviderName;
   defaultCommand: "translate" | "capture" | "clipboard";
+  screenshotCaptureMethod: ScreenshotCaptureMethod;
   providerRows: OcrProviderSettingsRow[];
   requestTimeoutMs: number;
   autoTranslateAfterOcr: boolean;
@@ -74,6 +76,7 @@ export interface OcrProvider {
 export interface ScreenshotProvider {
   captureRegion(
     ctx: Context,
+    captureMethod: ScreenshotCaptureMethod,
     skipConfirm?: boolean,
   ): Promise<CapturedImage | null>;
 }

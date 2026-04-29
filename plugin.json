@@ -119,7 +119,11 @@
       "error_llm_api_key_required": "OpenAI-compatible vision API key is required.",
       "error_llm_base_url_required": "OpenAI-compatible base URL is required.",
       "error_llm_model_required": "Vision model name is required.",
-      "error_offline_reserved": "Offline OCR is not implemented yet. This slot is reserved for a future built-in OCR engine."
+      "error_offline_reserved": "Offline OCR is not implemented yet. This slot is reserved for a future built-in OCR engine.",
+      "settings_screenshot_capture_method": "Screenshot method",
+      "settings_screenshot_capture_method_tip": "Choose Wox built-in Screenshot API for the capture UI, or use the legacy Screenshot OCR built-in selector as a fallback.",
+      "settings_option_capture_wox": "Wox Screenshot",
+      "settings_option_capture_builtin": "Built-in Screenshot OCR selector"
     },
     "zh_CN": {
       "plugin_name": "截图 OCR",
@@ -228,7 +232,11 @@
       "error_llm_api_key_required": "OpenAI 兼容视觉模型需要 API Key。",
       "error_llm_base_url_required": "OpenAI 兼容视觉模型需要 Base URL。",
       "error_llm_model_required": "需要指定视觉模型名称。",
-      "error_offline_reserved": "离线 OCR 尚未实现。此槽位预留给未来的内置 OCR 引擎。"
+      "error_offline_reserved": "离线 OCR 尚未实现。此槽位预留给未来的内置 OCR 引擎。",
+      "settings_screenshot_capture_method": "截图方式",
+      "settings_screenshot_capture_method_tip": "选择 Wox 内置截图 API 作为截图界面，或使用 Screenshot OCR 旧版内置框选作为兼容方案。",
+      "settings_option_capture_wox": "Wox 截图",
+      "settings_option_capture_builtin": "Screenshot OCR 内置截图"
     }
   },
   "Features": [
@@ -268,7 +276,31 @@
             "Value": "clipboard"
           }
         ],
-        "Style": { "Width": 360 }
+        "Style": {
+          "Width": 360
+        }
+      }
+    },
+    {
+      "Type": "select",
+      "Value": {
+        "Key": "screenshot_capture_method",
+        "Label": "i18n:settings_screenshot_capture_method",
+        "Tooltip": "i18n:settings_screenshot_capture_method_tip",
+        "DefaultValue": "wox",
+        "Options": [
+          {
+            "Label": "i18n:settings_option_capture_wox",
+            "Value": "wox"
+          },
+          {
+            "Label": "i18n:settings_option_capture_builtin",
+            "Value": "builtin"
+          }
+        ],
+        "Style": {
+          "Width": 360
+        }
       }
     },
     {
@@ -279,10 +311,18 @@
         "Tooltip": "i18n:settings_ocr_service_type_tip",
         "DefaultValue": "free",
         "Options": [
-          { "Label": "i18n:settings_option_free_ocr", "Value": "free" },
-          { "Label": "i18n:settings_option_llm_ocr", "Value": "llm" }
+          {
+            "Label": "i18n:settings_option_free_ocr",
+            "Value": "free"
+          },
+          {
+            "Label": "i18n:settings_option_llm_ocr",
+            "Value": "llm"
+          }
         ],
-        "Style": { "Width": 360 }
+        "Style": {
+          "Width": 360
+        }
       }
     },
     {
@@ -291,7 +331,9 @@
         "Key": "auto_translate_after_ocr",
         "Label": "i18n:settings_auto_translate",
         "DefaultValue": "false",
-        "Style": { "Width": 360 }
+        "Style": {
+          "Width": 360
+        }
       }
     },
     {
@@ -301,7 +343,9 @@
         "Label": "i18n:settings_translate_prefix",
         "DefaultValue": "tr",
         "MaxLines": 1,
-        "Style": { "Width": 220 }
+        "Style": {
+          "Width": 220
+        }
       }
     },
     {
@@ -310,7 +354,9 @@
         "Key": "skip_confirm_after_selection",
         "Label": "i18n:settings_skip_confirm",
         "DefaultValue": "false",
-        "Style": { "Width": 360 }
+        "Style": {
+          "Width": 360
+        }
       }
     },
     {
@@ -320,7 +366,9 @@
         "Label": "i18n:settings_auto_execute",
         "Tooltip": "i18n:settings_auto_execute_tip",
         "DefaultValue": "false",
-        "Style": { "Width": 360 }
+        "Style": {
+          "Width": 360
+        }
       }
     },
     {
@@ -348,10 +396,18 @@
             "Label": "i18n:provider_windows_app_sdk",
             "Value": "windows_app_sdk"
           },
-          { "Label": "i18n:provider_snipping_tool", "Value": "snipping_tool" },
-          { "Label": "i18n:provider_wechat_qq", "Value": "wechat_qq" }
+          {
+            "Label": "i18n:provider_snipping_tool",
+            "Value": "snipping_tool"
+          },
+          {
+            "Label": "i18n:provider_wechat_qq",
+            "Value": "wechat_qq"
+          }
         ],
-        "Style": { "Width": 360 }
+        "Style": {
+          "Width": 360
+        }
       }
     },
     {
@@ -389,7 +445,12 @@
             "Label": "i18n:table_provider",
             "Type": "select",
             "Width": 190,
-            "SelectOptions": [{ "Label": "i18n:provider_llm", "Value": "llm" }]
+            "SelectOptions": [
+              {
+                "Label": "i18n:provider_llm",
+                "Value": "llm"
+              }
+            ]
           },
           {
             "Key": "apiKey",
@@ -413,7 +474,9 @@
             "HideInTable": true
           }
         ],
-        "Style": { "Width": 780 }
+        "Style": {
+          "Width": 780
+        }
       }
     },
     {
@@ -440,10 +503,15 @@
         "Validators": [
           {
             "Type": "is_number",
-            "Value": { "IsInteger": true, "IsFloat": false }
+            "Value": {
+              "IsInteger": true,
+              "IsFloat": false
+            }
           }
         ],
-        "Style": { "Width": 220 }
+        "Style": {
+          "Width": 220
+        }
       }
     }
   ]

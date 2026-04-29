@@ -8,6 +8,7 @@ import {
   CapturedImage,
   ClipboardImageProvider,
   I18nError,
+  ScreenshotCaptureMethod,
   ScreenshotProvider,
 } from "./types";
 
@@ -139,6 +140,7 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
 
   async captureRegion(
     _ctx: Context,
+    _captureMethod: ScreenshotCaptureMethod,
     skipConfirm = false,
   ): Promise<CapturedImage | null> {
     const outputPath = cachePath(this.cacheDirectory, "capture");
@@ -177,11 +179,22 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
 
   async captureRegion(
     ctx: Context,
+    captureMethod: ScreenshotCaptureMethod,
     skipConfirm = false,
   ): Promise<CapturedImage | null> {
+    if (captureMethod === "builtin") {
+      await this.api.HideApp(ctx);
+      return this.fallbackProvider.captureRegion(
+        ctx,
+        captureMethod,
+        skipConfirm,
+      );
+    }
+
     try {
       if (typeof this.api.Screenshot !== "function") {
-        return this.fallbackProvider.captureRegion(ctx, skipConfirm);
+        await this.api.HideApp(ctx);
+        return this.fallbackProvider.captureRegion(ctx, "builtin", skipConfirm);
       }
 
       const result = await this.api.Screenshot(ctx, {});
@@ -207,7 +220,8 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
       if (error instanceof I18nError) {
         throw error;
       }
-      return this.fallbackProvider.captureRegion(ctx, skipConfirm);
+      await this.api.HideApp(ctx);
+      return this.fallbackProvider.captureRegion(ctx, "builtin", skipConfirm);
     }
   }
 }

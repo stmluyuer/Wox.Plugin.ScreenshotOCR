@@ -203,6 +203,7 @@ async function buildAutoRunResult(
 async function resolveImage(
   ctx: Context,
   source: "capture" | "clipboard" | "file",
+  settings: PluginSettings,
   skipConfirm: boolean,
   filePath?: string,
 ): Promise<CapturedImage | null> {
@@ -218,7 +219,11 @@ async function resolveImage(
   }
 
   if (source === "capture") {
-    return screenshotProvider.captureRegion(ctx, skipConfirm);
+    return screenshotProvider.captureRegion(
+      ctx,
+      settings.screenshotCaptureMethod,
+      skipConfirm,
+    );
   }
 
   return clipboardImageProvider.readImage();
@@ -300,6 +305,7 @@ async function runWorkflow(
     const image = await resolveImage(
       ctx,
       source,
+      settings,
       settings.skipConfirmAfterSelection,
       filePath,
     );

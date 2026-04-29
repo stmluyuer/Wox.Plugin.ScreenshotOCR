@@ -3,11 +3,13 @@ import {
   OcrProviderName,
   OcrProviderSettingsRow,
   PluginSettings,
+  ScreenshotCaptureMethod,
 } from "./types";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
   defaultOcrProvider: "windows_app_sdk",
   defaultCommand: "translate",
+  screenshotCaptureMethod: "wox",
   providerRows: [],
   requestTimeoutMs: 15000,
   autoTranslateAfterOcr: false,
@@ -35,6 +37,11 @@ const FREE_OCR_PROVIDERS: OcrProviderName[] = [
   "wechat_qq",
 ];
 
+const SCREENSHOT_CAPTURE_METHODS: ScreenshotCaptureMethod[] = [
+  "wox",
+  "builtin",
+];
+
 export function normalizeOcrProvider(value: string): OcrProviderName {
   return VALID_PROVIDERS.includes(value as OcrProviderName)
     ? (value as OcrProviderName)
@@ -45,6 +52,14 @@ export function normalizeFreeOcrProvider(value: string): OcrProviderName {
   return FREE_OCR_PROVIDERS.includes(value as OcrProviderName)
     ? (value as OcrProviderName)
     : DEFAULT_SETTINGS.defaultOcrProvider;
+}
+
+export function normalizeScreenshotCaptureMethod(
+  value: string,
+): ScreenshotCaptureMethod {
+  return SCREENSHOT_CAPTURE_METHODS.includes(value as ScreenshotCaptureMethod)
+    ? (value as ScreenshotCaptureMethod)
+    : DEFAULT_SETTINGS.screenshotCaptureMethod;
 }
 
 export function parseProviderRows(value: string): OcrProviderSettingsRow[] {
@@ -132,6 +147,14 @@ export async function loadSettings(
     defaultOcrProvider:
       serviceType === "llm" ? "llm" : normalizeFreeOcrProvider(freeProvider),
     defaultCommand: safeDefaultCommand,
+    screenshotCaptureMethod: normalizeScreenshotCaptureMethod(
+      await getSetting(
+        api,
+        ctx,
+        "screenshot_capture_method",
+        DEFAULT_SETTINGS.screenshotCaptureMethod,
+      ),
+    ),
     providerRows: parseProviderRows(
       await getSetting(api, ctx, "ocr_provider_table", "[]"),
     ),
