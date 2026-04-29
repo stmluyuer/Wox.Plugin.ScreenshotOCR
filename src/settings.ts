@@ -106,6 +106,7 @@ export async function loadSettings(
   api: PublicAPI,
   ctx: Context,
 ): Promise<PluginSettings> {
+  const isWindows = process.platform === "win32";
   const timeoutRaw = await getSetting(
     api,
     ctx,
@@ -148,7 +149,9 @@ export async function loadSettings(
 
   return {
     defaultOcrProvider:
-      serviceType === "llm" ? "llm" : normalizeFreeOcrProvider(freeProvider),
+      serviceType === "llm" || !isWindows
+        ? "llm"
+        : normalizeFreeOcrProvider(freeProvider),
     defaultCommand: safeDefaultCommand,
     screenshotCaptureMethod: normalizeScreenshotCaptureMethod(
       await getSetting(

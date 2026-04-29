@@ -74,4 +74,28 @@ describe("settings helpers", () => {
 
     expect(settings.defaultOcrProvider).toBe("llm");
   });
+
+  test("uses large model OCR on non-Windows platforms", async () => {
+    const platform = Object.getOwnPropertyDescriptor(process, "platform");
+    Object.defineProperty(process, "platform", { value: "darwin" });
+    try {
+      const api = {
+        GetSetting: jest.fn(async (_ctx, key: string) => {
+          const values: Record<string, string> = {
+            ocr_service_type: "free",
+            default_free_ocr_provider: "windows_app_sdk",
+          };
+          return values[key] || "";
+        }),
+      };
+
+      const settings = await loadSettings(api as never, {} as never);
+
+      expect(settings.defaultOcrProvider).toBe("llm");
+    } finally {
+      if (platform) {
+        Object.defineProperty(process, "platform", platform);
+      }
+    }
+  });
 });

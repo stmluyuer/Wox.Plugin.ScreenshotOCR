@@ -10,7 +10,7 @@
   "Website": "https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR",
   "Entry": "index.js",
   "Icon": "relative:images/app.svg",
-  "SupportedOS": ["windows"],
+  "SupportedOS": ["Windows", "Darwin", "Linux"],
   "I18n": {
     "en_US": {
       "plugin_name": "Screenshot OCR",
@@ -27,11 +27,11 @@
       "settings_group_llm_ocr": "Large model OCR",
       "settings_group_advanced": "Advanced",
       "settings_ocr_service_type": "OCR service type",
-      "settings_ocr_service_type_tip": "Use no-configuration local OCR, or route OCR requests through the configured vision model.",
+      "settings_ocr_service_type_tip": "Use no-configuration local OCR on Windows, or route OCR requests through the configured vision model. macOS/Linux use Large model OCR.",
       "settings_option_free_ocr": "No-configuration OCR",
       "settings_option_llm_ocr": "Large model OCR",
       "settings_free_ocr_provider": "No-configuration OCR provider",
-      "settings_free_ocr_provider_tip": "These providers work without API keys. Snipping Tool and WeChat/QQ can optionally use a local bridge command, otherwise they fall back to the bundled Windows OCR helper.",
+      "settings_free_ocr_provider_tip": "Windows-only providers that work without API keys. Snipping Tool and WeChat/QQ can optionally use a local bridge command, otherwise they fall back to the bundled Windows OCR helper.",
       "settings_timeout": "Request timeout",
       "settings_translate_prefix": "Translate query prefix",
       "settings_auto_translate": "Auto translate after OCR",
@@ -91,7 +91,7 @@
       "error_image_file_path_empty": "Image file path is empty.",
       "error_unknown_command": "Unknown OCR command: {command}",
       "error_image_file_missing": "Image file does not exist: {path}",
-      "error_capture_platform_unsupported": "Screenshot capture is implemented for Windows first. macOS/Linux adapters are reserved.",
+      "error_capture_platform_unsupported": "Screenshot capture is unavailable on this platform.",
       "error_clipboard_platform_unsupported": "Clipboard image reading is implemented for Windows first. macOS/Linux adapters are reserved.",
       "error_windows_capture_failed": "Windows screenshot capture failed. {message}",
       "error_wox_screenshot_failed": "Wox screenshot failed. {message}",
@@ -121,10 +121,12 @@
       "error_llm_model_required": "Vision model name is required.",
       "error_offline_reserved": "Offline OCR is not implemented yet. This slot is reserved for a future built-in OCR engine.",
       "settings_screenshot_capture_method": "Screenshot method",
-      "settings_screenshot_capture_method_tip": "Choose Wox built-in Screenshot API for the capture UI, or use the legacy Screenshot OCR built-in selector as a fallback.",
+      "settings_screenshot_capture_method_tip": "Use Wox Screenshot for cross-platform capture. The legacy Screenshot OCR built-in selector is Windows-only.",
       "settings_option_capture_wox": "Wox Screenshot",
       "settings_option_capture_builtin": "Built-in Screenshot OCR selector",
-      "settings_skip_confirm_tip": "Only the built-in Screenshot OCR selector can skip the confirm page. When this is enabled, captures use the built-in selector even if Screenshot method is set to Wox Screenshot."
+      "settings_skip_confirm_tip": "Only the built-in Screenshot OCR selector can skip the confirm page, and it is Windows-only. When this is enabled on Windows, captures use the built-in selector even if Screenshot method is set to Wox Screenshot.",
+      "error_builtin_capture_platform_unsupported": "The built-in Screenshot OCR selector is only available on Windows. Use Wox Screenshot on this platform.",
+      "error_wox_screenshot_unavailable": "Wox Screenshot API is not available in this Wox version."
     },
     "zh_CN": {
       "plugin_name": "截图 OCR",
@@ -141,11 +143,11 @@
       "settings_group_llm_ocr": "大模型 OCR",
       "settings_group_advanced": "高级设置",
       "settings_ocr_service_type": "OCR 服务类型",
-      "settings_ocr_service_type_tip": "使用免 API Key 的本地 OCR，或把 OCR 请求交给已配置的视觉大模型。",
+      "settings_ocr_service_type_tip": "Windows 可使用免配置本地 OCR，或将 OCR 请求交给已配置的视觉大模型。macOS/Linux 使用大模型 OCR。",
       "settings_option_free_ocr": "免配置 OCR",
       "settings_option_llm_ocr": "大模型 OCR",
       "settings_free_ocr_provider": "免配置 OCR 服务",
-      "settings_free_ocr_provider_tip": "这些服务不需要 API Key。Snipping Tool 和微信/QQ 可选本地桥接命令；未配置时回退到内置 Windows OCR 辅助程序。",
+      "settings_free_ocr_provider_tip": "仅 Windows 可用的免 API Key 服务。Snipping Tool 和微信/QQ 可选本地桥接命令；未配置时回退到内置 Windows OCR 辅助程序。",
       "settings_timeout": "请求超时",
       "settings_translate_prefix": "翻译查询前缀",
       "settings_auto_translate": "OCR 后自动翻译",
@@ -205,7 +207,7 @@
       "error_image_file_path_empty": "图片文件路径为空。",
       "error_unknown_command": "未知 OCR 命令：{command}",
       "error_image_file_missing": "图片文件不存在：{path}",
-      "error_capture_platform_unsupported": "截图功能暂仅支持 Windows。macOS/Linux 适配预留中。",
+      "error_capture_platform_unsupported": "当前平台不可用截图功能。",
       "error_clipboard_platform_unsupported": "剪贴板图片读取暂仅支持 Windows。macOS/Linux 适配预留中。",
       "error_windows_capture_failed": "Windows 截图失败。{message}",
       "error_wox_screenshot_failed": "Wox 截图失败。{message}",
@@ -235,10 +237,12 @@
       "error_llm_model_required": "需要指定视觉模型名称。",
       "error_offline_reserved": "离线 OCR 尚未实现。此槽位预留给未来的内置 OCR 引擎。",
       "settings_screenshot_capture_method": "截图方式",
-      "settings_screenshot_capture_method_tip": "选择 Wox 内置截图 API 作为截图界面，或使用 Screenshot OCR 旧版内置框选作为兼容方案。",
+      "settings_screenshot_capture_method_tip": "跨平台截图请使用 Wox 截图。旧版 Screenshot OCR 内置截图仅支持 Windows。",
       "settings_option_capture_wox": "Wox 截图",
       "settings_option_capture_builtin": "Screenshot OCR 内置截图",
-      "settings_skip_confirm_tip": "只有 Screenshot OCR 内置截图支持跳过确认页。开启后，即使截图方式选择 Wox 截图，本次截图也会自动使用内置截图。"
+      "settings_skip_confirm_tip": "只有 Screenshot OCR 内置截图支持跳过确认页，且仅支持 Windows。Windows 上开启后，即使截图方式选择 Wox 截图，本次截图也会自动使用内置截图。",
+      "error_builtin_capture_platform_unsupported": "Screenshot OCR 内置截图仅支持 Windows。当前平台请使用 Wox 截图。",
+      "error_wox_screenshot_unavailable": "当前 Wox 版本不可用 Wox 截图 API。"
     }
   },
   "Features": [
@@ -325,7 +329,8 @@
         "Style": {
           "Width": 360
         }
-      }
+      },
+      "DisabledInPlatforms": ["darwin", "linux"]
     },
     {
       "Type": "checkbox",
@@ -360,7 +365,8 @@
           "Width": 360
         },
         "Tooltip": "i18n:settings_skip_confirm_tip"
-      }
+      },
+      "DisabledInPlatforms": ["darwin", "linux"]
     },
     {
       "Type": "checkbox",
@@ -411,7 +417,8 @@
         "Style": {
           "Width": 360
         }
-      }
+      },
+      "DisabledInPlatforms": ["darwin", "linux"]
     },
     {
       "Type": "newline",

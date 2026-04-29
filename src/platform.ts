@@ -174,11 +174,14 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
 
 export class WoxScreenshotProvider implements ScreenshotProvider {
   private readonly api: PublicAPI;
-  private readonly fallbackProvider: WindowsScreenshotProvider;
+  private readonly fallbackProvider?: WindowsScreenshotProvider;
 
   constructor(options: WoxScreenshotOptions) {
     this.api = options.api;
-    this.fallbackProvider = new WindowsScreenshotProvider(options);
+    this.fallbackProvider =
+      process.platform === "win32"
+        ? new WindowsScreenshotProvider(options)
+        : undefined;
   }
 
   async captureRegion(
@@ -186,7 +189,15 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
     captureMethod: ScreenshotCaptureMethod,
     skipConfirm = false,
   ): Promise<CapturedImage | null> {
+    const canUseBuiltin = this.fallbackProvider !== undefined;
     if (captureMethod === "builtin" || skipConfirm) {
+      if (!canUseBuiltin) {
+        throw new PlatformUnsupportedError(
+          "error_builtin_capture_platform_unsupported",
+          {},
+          "The built-in Screenshot OCR selector is only available on Windows. Use Wox Screenshot on this platform.",
+        );
+      }
       // The script-based overlay needs Wox hidden before it starts capturing.
       if (captureMethod === "wox" && skipConfirm) {
         await this.api.Log(
@@ -201,6 +212,13 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
 
     try {
       if (typeof this.api.Screenshot !== "function") {
+        if (!canUseBuiltin) {
+          throw new PlatformUnsupportedError(
+            "error_wox_screenshot_unavailable",
+            {},
+            "Wox Screenshot API is not available in this Wox version.",
+          );
+        }
         // Older Wox versions do not expose the native screenshot API yet.
         await this.api.HideApp(ctx);
         return this.fallbackProvider.captureRegion(ctx, "builtin", skipConfirm);
@@ -227,6 +245,12 @@ export class WoxScreenshotProvider implements ScreenshotProvider {
       return { path: result.ScreenshotPath, source: "capture" };
     } catch (error) {
       if (error instanceof I18nError) {
+        throw error;
+      }
+      if (error instanceof PlatformUnsupportedError) {
+        throw error;
+      }
+      if (!canUseBuiltin) {
         throw error;
       }
       // Unexpected native API failures fall back to the bundled script path.
@@ -295,10 +319,7 @@ export function createScreenshotProvider(
   pluginDirectory: string,
   api: PublicAPI,
 ): ScreenshotProvider {
-  if (process.platform === "win32") {
-    return new WoxScreenshotProvider({ pluginDirectory, api });
-  }
-  return new UnsupportedScreenshotProvider();
+  return new WoxScreenshotProvider({ pluginDirectory, api });
 }
 
 export function createClipboardImageProvider(
