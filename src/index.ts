@@ -218,8 +218,7 @@ async function resolveImage(
   }
 
   if (source === "capture") {
-    await api.HideApp(ctx);
-    return screenshotProvider.captureRegion(skipConfirm);
+    return screenshotProvider.captureRegion(ctx, skipConfirm);
   }
 
   return clipboardImageProvider.readImage();
@@ -493,7 +492,7 @@ export const plugin: Plugin = {
   init: async (ctx: Context, initParams: PluginInitParams) => {
     api = initParams.API;
     pluginDirectory = initParams.PluginDirectory;
-    screenshotProvider = createScreenshotProvider(pluginDirectory);
+    screenshotProvider = createScreenshotProvider(pluginDirectory, api);
     clipboardImageProvider = createClipboardImageProvider(pluginDirectory);
     await api.Log(
       ctx,

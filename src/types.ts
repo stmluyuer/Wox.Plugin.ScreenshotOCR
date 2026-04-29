@@ -1,3 +1,5 @@
+import type { Context } from "@wox-launcher/wox-plugin";
+
 export class I18nError extends Error {
   constructor(
     public readonly key: string,
@@ -70,7 +72,10 @@ export interface OcrProvider {
 }
 
 export interface ScreenshotProvider {
-  captureRegion(skipConfirm?: boolean): Promise<CapturedImage | null>;
+  captureRegion(
+    ctx: Context,
+    skipConfirm?: boolean,
+  ): Promise<CapturedImage | null>;
 }
 
 export interface ClipboardImageProvider {

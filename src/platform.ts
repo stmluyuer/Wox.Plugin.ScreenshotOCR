@@ -3,6 +3,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
+import type { Context, PublicAPI } from "@wox-launcher/wox-plugin";
 import {
   CapturedImage,
   ClipboardImageProvider,
@@ -31,6 +32,10 @@ export class PlatformUnsupportedError extends Error {
 export interface ScriptPlatformOptions {
   pluginDirectory: string;
   cacheDirectory?: string;
+}
+
+export interface WoxScreenshotOptions extends ScriptPlatformOptions {
+  api: PublicAPI;
 }
 
 function cachePath(cacheDirectory: string, prefix: string): string {
@@ -132,7 +137,10 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
       options.cacheDirectory || join(tmpdir(), "wox-screenshot-ocr");
   }
 
-  async captureRegion(skipConfirm = false): Promise<CapturedImage | null> {
+  async captureRegion(
+    _ctx: Context,
+    skipConfirm = false,
+  ): Promise<CapturedImage | null> {
     const outputPath = cachePath(this.cacheDirectory, "capture");
     const scriptPath = join(
       this.pluginDirectory,
@@ -155,6 +163,52 @@ export class WindowsScreenshotProvider implements ScreenshotProvider {
       );
     }
     return { path: result.path, source: "capture" };
+  }
+}
+
+export class WoxScreenshotProvider implements ScreenshotProvider {
+  private readonly api: PublicAPI;
+  private readonly fallbackProvider: WindowsScreenshotProvider;
+
+  constructor(options: WoxScreenshotOptions) {
+    this.api = options.api;
+    this.fallbackProvider = new WindowsScreenshotProvider(options);
+  }
+
+  async captureRegion(
+    ctx: Context,
+    skipConfirm = false,
+  ): Promise<CapturedImage | null> {
+    try {
+      if (typeof this.api.Screenshot !== "function") {
+        return this.fallbackProvider.captureRegion(ctx, skipConfirm);
+      }
+
+      const result = await this.api.Screenshot(ctx, {});
+      if (!result.Success) {
+        if (result.ErrMsg === "cancelled") {
+          return null;
+        }
+        throw new I18nError(
+          "error_wox_screenshot_failed",
+          { message: result.ErrMsg || "Wox screenshot failed." },
+          result.ErrMsg || "Wox screenshot failed.",
+        );
+      }
+      if (!result.ScreenshotPath || !existsSync(result.ScreenshotPath)) {
+        throw new I18nError(
+          "error_wox_screenshot_failed",
+          { message: "Wox screenshot completed without an image path." },
+          "Wox screenshot completed without an image path.",
+        );
+      }
+      return { path: result.ScreenshotPath, source: "capture" };
+    } catch (error) {
+      if (error instanceof I18nError) {
+        throw error;
+      }
+      return this.fallbackProvider.captureRegion(ctx, skipConfirm);
+    }
   }
 }
 
@@ -215,9 +269,10 @@ export class UnsupportedClipboardImageProvider
 
 export function createScreenshotProvider(
   pluginDirectory: string,
+  api: PublicAPI,
 ): ScreenshotProvider {
   if (process.platform === "win32") {
-    return new WindowsScreenshotProvider({ pluginDirectory });
+    return new WoxScreenshotProvider({ pluginDirectory, api });
   }
   return new UnsupportedScreenshotProvider();
 }
