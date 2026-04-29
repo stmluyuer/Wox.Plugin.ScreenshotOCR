@@ -32,6 +32,7 @@ let pluginDirectory = "";
 let screenshotProvider: ScreenshotProvider;
 let clipboardImageProvider: ClipboardImageProvider;
 const runningAutoRuns = new Map<string, string>();
+let captureWorkflowInProgress = false;
 
 const PLUGIN_ICON: WoxImage = {
   ImageType: "relative",
@@ -290,6 +291,20 @@ async function runWorkflow(
   translate: boolean,
   filePath?: string,
 ): Promise<void> {
+  let ownsCaptureWorkflow = false;
+  if (source === "capture") {
+    if (captureWorkflowInProgress) {
+      await api.Log(
+        ctx,
+        "Warning",
+        "Ignored duplicate screenshot workflow while another capture is still running.",
+      );
+      return;
+    }
+    captureWorkflowInProgress = true;
+    ownsCaptureWorkflow = true;
+  }
+
   const settings = await loadSettings(api, ctx);
   const shouldTranslate = translate || settings.autoTranslateAfterOcr;
   const provider = settings.defaultOcrProvider;
@@ -447,6 +462,10 @@ async function runWorkflow(
         PreviewProperties: {},
       },
     } as UpdatableResult);
+  } finally {
+    if (ownsCaptureWorkflow) {
+      captureWorkflowInProgress = false;
+    }
   }
 }
 

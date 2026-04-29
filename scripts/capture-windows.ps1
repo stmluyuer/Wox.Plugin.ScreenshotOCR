@@ -121,20 +121,8 @@ public sealed class WoxSnipOverlayForm : Form {
   }
 
   private void DrawToolbar(Graphics g) {
-    int btnW = 90;
-    int btnH = 34;
-    int padding = 7;
-    int totalW = btnW * 3 + padding * 4;
-    int totalH = btnH + padding * 2;
-
-    // position: bottom-right corner of the selection
-    int barX = selection.Right - totalW;
-    int barY = selection.Bottom + 8;
-    if (barY + totalH > ClientSize.Height) barY = selection.Top - totalH - 8;
-    if (barY < 0) barY = selection.Bottom - totalH - 4;
-
-    // bar background
-    Rectangle barRect = new Rectangle(barX, barY, totalW, totalH);
+    int btnW = 90, btnH = 34, padding = 7;
+    Rectangle barRect = GetToolbarRect(btnW, btnH, padding);
     using (GraphicsPath barPath = RoundedRect(barRect, 6))
     using (SolidBrush barBrush = new SolidBrush(Color.FromArgb(235, 30, 30, 32))) {
       g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -142,13 +130,45 @@ public sealed class WoxSnipOverlayForm : Form {
       g.SmoothingMode = SmoothingMode.None;
     }
 
-    btnConfirmRect = new Rectangle(barX + padding, barY + padding, btnW, btnH);
-    btnCopyRect    = new Rectangle(barX + padding * 2 + btnW, barY + padding, btnW, btnH);
-    btnSaveRect    = new Rectangle(barX + padding * 3 + btnW * 2, barY + padding, btnW, btnH);
+    btnConfirmRect = new Rectangle(barRect.X + padding, barRect.Y + padding, btnW, btnH);
+    btnCopyRect    = new Rectangle(barRect.X + padding * 2 + btnW, barRect.Y + padding, btnW, btnH);
+    btnSaveRect    = new Rectangle(barRect.X + padding * 3 + btnW * 2, barRect.Y + padding, btnW, btnH);
 
     DrawButton(g, btnConfirmRect, "确认", hoveredButton == 1);
     DrawButton(g, btnCopyRect,    "复制", hoveredButton == 2);
     DrawButton(g, btnSaveRect,    "保存", hoveredButton == 3);
+  }
+
+  private Rectangle GetToolbarRect(int btnW, int btnH, int padding) {
+    int gap = 8;
+    int totalW = btnW * 3 + padding * 4;
+    int totalH = btnH + padding * 2;
+    int maxX = Math.Max(0, ClientSize.Width - totalW);
+    int maxY = Math.Max(0, ClientSize.Height - totalH);
+
+    int alignedX = Clamp(selection.Left, 0, maxX);
+    if (selection.Bottom + gap + totalH <= ClientSize.Height) {
+      return new Rectangle(alignedX, selection.Bottom + gap, totalW, totalH);
+    }
+    if (selection.Top - gap - totalH >= 0) {
+      return new Rectangle(alignedX, selection.Top - gap - totalH, totalW, totalH);
+    }
+
+    int alignedY = Clamp(selection.Bottom - totalH, 0, maxY);
+    if (selection.Right + gap + totalW <= ClientSize.Width) {
+      return new Rectangle(selection.Right + gap, alignedY, totalW, totalH);
+    }
+    if (selection.Left - gap - totalW >= 0) {
+      return new Rectangle(selection.Left - gap - totalW, alignedY, totalW, totalH);
+    }
+
+    return new Rectangle(alignedX, Clamp(selection.Bottom + gap, 0, maxY), totalW, totalH);
+  }
+
+  private static int Clamp(int value, int min, int max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
   }
 
   private void DrawButton(Graphics g, Rectangle rect, string text, bool hovered) {
@@ -315,13 +335,7 @@ public sealed class WoxSnipOverlayForm : Form {
   private void InvalidateToolbar() {
     if (selection.Width <= 0) return;
     int btnW = 90, btnH = 34, padding = 7;
-    int totalW = btnW * 3 + padding * 4;
-    int totalH = btnH + padding * 2;
-    int barX = selection.Right - totalW;
-    int barY = selection.Bottom + 8;
-    if (barY + totalH > ClientSize.Height) barY = selection.Top - totalH - 8;
-    if (barY < 0) barY = selection.Bottom - totalH - 4;
-    Invalidate(new Rectangle(barX, barY, totalW, totalH), false);
+    Invalidate(GetToolbarRect(btnW, btnH, padding), false);
   }
 
   private static Rectangle RectangleFromPoints(Point a, Point b) {
@@ -335,7 +349,7 @@ public sealed class WoxSnipOverlayForm : Form {
   private void SetSelection(Rectangle nextSelection) {
     previousSelection = selection;
     selection = nextSelection;
-    Invalidate(RepaintRectangle(previousSelection, selection), false);
+    Invalidate();
   }
 
   private Rectangle RepaintRectangle(Rectangle a, Rectangle b) {
