@@ -146,12 +146,12 @@ public sealed class WoxSnipOverlayForm : Form {
     int maxX = Math.Max(0, ClientSize.Width - totalW);
     int maxY = Math.Max(0, ClientSize.Height - totalH);
 
-    int alignedX = Clamp(selection.Left, 0, maxX);
+    int anchoredX = Clamp(selection.Right - totalW, 0, maxX);
     if (selection.Bottom + gap + totalH <= ClientSize.Height) {
-      return new Rectangle(alignedX, selection.Bottom + gap, totalW, totalH);
+      return new Rectangle(anchoredX, selection.Bottom + gap, totalW, totalH);
     }
     if (selection.Top - gap - totalH >= 0) {
-      return new Rectangle(alignedX, selection.Top - gap - totalH, totalW, totalH);
+      return new Rectangle(anchoredX, selection.Top - gap - totalH, totalW, totalH);
     }
 
     int alignedY = Clamp(selection.Bottom - totalH, 0, maxY);
@@ -162,7 +162,7 @@ public sealed class WoxSnipOverlayForm : Form {
       return new Rectangle(selection.Left - gap - totalW, alignedY, totalW, totalH);
     }
 
-    return new Rectangle(alignedX, Clamp(selection.Bottom + gap, 0, maxY), totalW, totalH);
+    return new Rectangle(anchoredX, Clamp(selection.Bottom + gap, 0, maxY), totalW, totalH);
   }
 
   private static int Clamp(int value, int min, int max) {
