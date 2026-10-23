@@ -2,44 +2,60 @@
 
 [中文](README.md) | [English](README.en.md)
 
-> **测试版声明**：当前插件仍属于测试版本，尚未经过充分测试。如有严重 bug，我先道歉；也欢迎在 GitHub Issues 反馈给我，我会尽快修复。
+> 插件目前仍是测试版，尚未充分测试。遇到严重 bug 先说声抱歉，欢迎通过 [GitHub Issues](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/issues) 反馈，我会尽快修复。
 
-Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截图 OCR 插件。支持截图、剪贴板图片和图片文件的文字识别，设计上与 LuxTranslate 通过 `tr` 查询前缀协同工作，典型流程为：
+Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截图 OCR 插件。支持截图、剪贴板图片和图片文件的文字识别，可与 [LuxTranslate](https://github.com/stmluyuer/Wox.Plugin.LuxTranslate) 通过 `tr` 查询前缀协同工作，典型流程为：
 
 ```text
 截图 -> OCR 识别文字 -> LuxTranslate -> 目标语言
 ```
 
+[下载 Windows 测试版](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/releases/latest) · [反馈问题](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/issues)
+
+![命令帮助](screenshots/command-help.jpg)
+
 ## 功能
 
-- `ocr capture` 在 Windows 上打开类似 Snipaste 的区域截图窗口。
+- `ocr capture` 截取屏幕区域；当前源码默认调用 Wox 截图，Windows 还可使用内置区域选择窗口。
 - `ocr clipboard` 读取剪贴板中的图片并执行 OCR。
 - `ocr file <path>` 识别本地已有图片文件。
 - `ocr translate` 截图、识别并发送结果到 LuxTranslate。
-- 免配置 OCR：支持 Windows 本地 OCR、Snipping Tool OCR 和微信/QQ OCR。
+- Windows 免配置 OCR：使用内置 Windows OCR 助手；Snipping Tool 和微信/QQ 选项可通过兼容桥接命令扩展。
 - 大模型 OCR：支持 OpenAI 兼容视觉模型。
 - 本地部署脚本，方便快速部署到 `%USERPROFILE%\.wox\wox-user\plugins` 测试。
 
 ## OCR 服务
 
-Screenshot OCR 支持以下 OCR 服务：
+当前设置提供以下 OCR 选项：
 
 | 类别       | 服务                                                     |
 | ---------- | -------------------------------------------------------- |
-| 免配置 OCR | Windows App SDK 本地 OCR、Snipping Tool OCR、微信/QQ OCR |
+| 免配置 OCR | Windows 本地 OCR；Snipping Tool、微信/QQ 兼容桥接选项 |
 | 大模型 OCR | OpenAI 兼容视觉模型                                      |
 
 说明：
 
-- 免配置 OCR 不需要 API Key。
-- Windows App SDK 本地 OCR 通过 Windows Runtime OCR 离线运行，需要 Windows 10 或 Windows 11。
-- Snipping Tool OCR 面向 Windows 10/11 声明。如果配置了兼容的本地桥接命令则使用该命令，否则回退到内置的 Windows 本地 OCR 助手。
-- 微信/QQ OCR 需要安装微信或 QQ 提供原生识别路径。如果配置了兼容的本地桥接命令则使用该命令，否则回退到内置的 Windows 本地 OCR 助手。
-- 大模型 OCR 使用 OpenAI-compatible `chat/completions` 接口传入图片。
+- Windows 免配置 OCR 不需要 API Key。设置中名为“Windows App SDK 本地 OCR”的选项使用内置助手调用 Windows Runtime OCR，需要 Windows 10/11 及相应的系统识别语言支持。
+- Snipping Tool 和微信/QQ 选项配置兼容桥接命令后会调用该命令；未配置时，均回退到同一个 Windows OCR 助手。仅选择这些名称不会自动接入对应应用的原生 OCR。
+- 大模型 OCR 使用 OpenAI-compatible `chat/completions` 接口，需要支持图片输入的模型及相应 API 配置，图片会发送到所配置的服务。
+
+当前 `main` 分支的跨平台范围如下；已发布的 v0.1.0 包仅支持 Windows：
+
+| 能力 | Windows | macOS / Linux（当前源码） |
+| --- | --- | --- |
+| 区域截图 | Wox 截图或内置选择窗口 | 需要提供 Screenshot API 的 Wox，使用 Wox 截图 |
+| 剪贴板图片 | 支持 | 尚未实现 |
+| 图片文件 | 支持 | 支持 |
+| OCR | Windows 本地 OCR 或视觉大模型 | 视觉大模型，需要先配置服务 |
+| 框选后跳过确认 | 内置选择窗口支持 | 不支持 |
 
 ## 安装
 
-仓库已按 Wox Store 打包流程准备。发布前请在 GitHub Release 上传生成的 `.wox` 资产，然后再提交 Wox Store 条目。
+Windows 用户可从 [GitHub Releases](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/releases/latest) 下载 `wox.plugin.screenshotocr.wox`，在 Wox 中打开安装。当前发布版为 [v0.1.0](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/releases/tag/v0.1.0)，声明要求 Wox 2.0.0 或更高版本。
+
+如需将识别结果交给 LuxTranslate，请另外安装该插件，并保持两者的翻译查询前缀一致（默认 `tr`）。
+
+从源码构建（当前分支包含上述跨平台改动，需要 Node.js、pnpm 和用于构建 Windows OCR 助手的 .NET SDK）：
 
 ```bash
 git clone https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR.git
@@ -80,11 +96,13 @@ pnpm run deploy
 
 ## 配置
 
-- `OCR 服务类型`：选择免配置 OCR 或大模型 OCR。
+- `默认命令`：选择帮助结果中的默认操作。
+- `截图方式`：当前源码可选择 Wox 截图或 Windows 内置选择窗口。
+- `OCR 服务类型`：Windows 可选免配置 OCR 或大模型 OCR；当前源码在 macOS/Linux 上使用大模型 OCR。
 - `免配置 OCR 服务`：选择免配置模式下使用的本地服务。
 - `OCR 后自动翻译`：即使使用非翻译命令，也将 OCR 结果发送到翻译。
 - `完整命令自动执行`：输入完整 OCR 命令后立即执行，不需要按回车。
-- `框选后直接识别（跳过确认）`：截图框选完成后直接开始 OCR，不显示确认工具栏。
+- `框选后直接识别（跳过确认）`：仅 Windows 支持，使用内置选择窗口跳过确认工具栏；当前源码开启此项时也会切换到内置窗口。
 - `翻译查询前缀`：默认为 `tr`。
 - `请求超时`：大模型 OCR 调用和本地 OCR 桥接命令的超时时间。
 - `大模型 OCR 配置`：在服务表格中配置 API Key、Base URL 和模型。
@@ -109,17 +127,13 @@ pnpm run package
 
 ## 工作流
 
-1. 构建并部署插件。
-2. 运行 `ocr capture`，验证 Windows 区域选择覆盖层。
-3. 复制图片到剪贴板，运行 `ocr clipboard`。
-4. 如需使用大模型 OCR，配置大模型服务。
+1. 安装发布包，或构建并部署当前源码。
+2. 如需使用大模型 OCR，先配置服务；macOS/Linux 当前源码必须配置。
+3. 运行 `ocr capture` 截取区域，或运行 `ocr file <path>` 识别已有图片。
+4. Windows 用户还可复制图片到剪贴板，运行 `ocr clipboard`。
 5. 运行 `ocr translate` 或 `ocr clipboard translate` 将 OCR 文字交给 LuxTranslate。
 
 ## 截图
-
-- **指令帮助页面**：`ocr` 命令展示的完整帮助信息。
-
-  ![命令帮助](screenshots/command-help.jpg)
 
 - **插件配置页面**：Wox 插件设置面板。
 
