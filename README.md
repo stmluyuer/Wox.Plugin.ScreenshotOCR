@@ -1,4 +1,4 @@
-# Screenshot OCR
+# <img src="images/app.svg" alt="" width="36" height="36"> Screenshot OCR
 
 [中文](README.md) | [English](README.en.md)
 
@@ -12,7 +12,18 @@ Screenshot OCR 是一个面向 [Wox](https://github.com/Wox-launcher/Wox) 的截
 
 [下载 Windows 测试版](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/releases/latest) · [反馈问题](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/issues)
 
-![命令帮助](screenshots/command-help.jpg)
+![图片文件识别操作演示](screenshots/ocr-file-demo.gif)
+
+Wox v2.4.7 + Screenshot OCR v0.1.0 的 10 秒文件识别演示：输入 `ocr file C:\Temp\WoxReadmeDemo\sample.png --run`，使用 Windows 本地 OCR 识别并查看结果，无需 API Key。
+
+<details>
+<summary>查看识别结果对照</summary>
+
+![输入样图与实际识别结果对照](screenshots/ocr-result-comparison.png)
+
+上方是[演示输入图片](screenshots/ocr-input.png)，下方是实际 Wox 识别结果。
+
+</details>
 
 ## 功能
 

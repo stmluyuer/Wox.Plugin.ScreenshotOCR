@@ -1,4 +1,4 @@
-# Screenshot OCR
+# <img src="images/app.svg" alt="" width="36" height="36"> Screenshot OCR
 
 [English](README.en.md) | [中文](README.md)
 
@@ -12,7 +12,18 @@ Screenshot -> OCR text recognition -> LuxTranslate -> target language
 
 [Download the Windows beta](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/releases/latest) · [Report an issue](https://github.com/stmluyuer/Wox.Plugin.ScreenshotOCR/issues)
 
-![Command help](screenshots/command-help.jpg)
+![Image file OCR demonstration](screenshots/ocr-file-demo.gif)
+
+This 10-second demo uses Wox v2.4.7 + Screenshot OCR v0.1.0: enter `ocr file C:\Temp\WoxReadmeDemo\sample.png --run`, run Windows local OCR without an API key, and view the result.
+
+<details>
+<summary>View the OCR result comparison</summary>
+
+![Input image compared with the actual OCR result](screenshots/ocr-result-comparison.png)
+
+The top panel shows the [sample input image](screenshots/ocr-input.png); the bottom panel is the actual Wox OCR result.
+
+</details>
 
 ## Features
 
